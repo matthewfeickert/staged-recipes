@@ -16,10 +16,10 @@ build:
   number: 0
   skip: true  # [not linux]
   script:
+    - echo "LOOK FOR ME"
     - command -v g++
     - g++ --version
-    - {{ compiler('cxx') }} --version
-    - echo "${CXXFLAGS}"
+    - ldconfig --print-cache | grep libgmp
     - {{ PYTHON }} -m pip install . -vv
   missing_dso_whitelist:
     - $RPATH/libfastjet.so.0
@@ -29,6 +29,9 @@ requirements:
   build:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
+    - cgal
+    - cgal-cpp
+    - gmp
   host:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
