@@ -1,1 +1,6 @@
 boost-devel
+mpfr-devel
+autoconf
+libtool
+# gcc v8+ required for '-std=c++17', but get latest
+devtoolset-12-gcc-c++
