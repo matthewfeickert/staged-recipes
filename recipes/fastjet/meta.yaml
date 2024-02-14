@@ -29,6 +29,11 @@ requirements:
   build:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
+    - make
+    - libtool
+    - automake
+    - autoconf
+    - swig
     - cgal
     - cgal-cpp
     - gmp
@@ -42,14 +47,9 @@ requirements:
     - cgal
     - cgal-cpp
     - gmp
-    - libtool
     - libboost-devel
     - libboost-python-devel
     - patch
-    - make
-    - automake
-    - autoconf
-    - swig
     - gxx
   run:
     - awkward >=2
