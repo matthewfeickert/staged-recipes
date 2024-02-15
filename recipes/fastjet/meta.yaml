@@ -15,10 +15,7 @@ source:
 build:
   number: 0
   skip: true  # [not linux]
-  script:
-    - echo "LOOK FOR ME"
-    - ldconfig --print-cache | grep libgmp
-    - {{ PYTHON }} -m pip install . -vv
+  script: {{ PYTHON }} -m pip install . -vv
   missing_dso_whitelist:
     - $RPATH/libfastjet.so.0
     - $RPATH/libfastjettools.so.0
@@ -27,20 +24,19 @@ requirements:
   build:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
-    - gxx  # Specific executable name of 'g++' seems to be required for fastjet-contrib. compiler('cxx') not understood
+    - gxx  # FIXME: 'g++' executable name required for fastjet-contrib
     - make
     - libtool
     - automake
     - autoconf
     - swig
-    - gmp
     - patch
+    - gmp  # In 'build' over 'host' as avoids 'ld: cannot find -lgmp: No such file or directory' error
   host:
     - pip
     - pybind11
     - python
     - cgal-cpp
-    - gmp  # Avoids 'ld: cannot find -lgmp: No such file or directory' error
   run:
     - awkward >=2
     - numpy >=1.13.3
