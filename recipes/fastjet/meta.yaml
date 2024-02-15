@@ -17,8 +17,6 @@ build:
   skip: true  # [not linux]
   script:
     - echo "LOOK FOR ME"
-    - command -v g++
-    - g++ --version
     - ldconfig --print-cache | grep libgmp
     - {{ PYTHON }} -m pip install . -vv
   missing_dso_whitelist:
@@ -29,27 +27,25 @@ requirements:
   build:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
+    - gxx  # Specific executable name of 'g++' seems to be required for fastjet-contrib. compiler('cxx') not understood
     - make
     - libtool
     - automake
     - autoconf
     - swig
-    - gmp
+    - gmp  # Should be able to remove as using the .so not the headers
+    - patch
   host:
-    - {{ compiler('c') }}
-    - {{ compiler('cxx') }}
-    - gxx
     - pip
     - pybind11
     - python
     - mpfr
-    - cgal-cpp
+    - cgal-cpp  # can move to build as using the headers not the lib
     - gmp
-    - patch
   run:
     - awkward >=2
     - numpy >=1.13.3
-    - python
+    - python >=3.7
     - vector
 
 test:
