@@ -34,23 +34,18 @@ requirements:
     - automake
     - autoconf
     - swig
-    - cgal
-    - cgal-cpp
     - gmp
   host:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
+    - gxx
     - pip
     - pybind11
     - python
     - mpfr
-    - cgal
     - cgal-cpp
     - gmp
-    - libboost-devel
-    - libboost-python-devel
     - patch
-    - gxx
   run:
     - awkward >=2
     - numpy >=1.13.3
