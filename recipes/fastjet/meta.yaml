@@ -11,7 +11,6 @@ source:
   sha256: 86dea05ce7a030db9fe14e5bf1c0bc46351b6e439f9b9ef6b14a55ceefcc7b7a
   patches:
     - 0001-Don-t-overwrite-external-CXXFLAGS-and-LDFLAGS.patch
-    - 0002-Add-makefile_inc-for-fastjet-contrib.patch
 
 build:
   number: 0
@@ -30,7 +29,6 @@ requirements:
   build:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
-    # - gxx  # FIXME: 'g++' executable name required for fastjet-contrib
     - make
     - libtool
     - automake
