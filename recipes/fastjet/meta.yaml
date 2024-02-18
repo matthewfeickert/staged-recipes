@@ -19,9 +19,9 @@ build:
   # https://docs.conda.io/projects/conda-build/en/stable/resources/define-metadata.html#rpaths
   # rpaths:
   #   - lib/
-  # https://docs.conda.io/projects/conda-build/en/stable/resources/define-metadata.html#whitelisting-shared-libraries
   missing_dso_whitelist:
-    # All are under lib/python3.*/site-packages/fastjet/_fastjet_core/lib
+  # https://docs.conda.io/projects/conda-build/en/stable/resources/define-metadata.html#whitelisting-shared-libraries
+  # All are under lib/python3.*/site-packages/fastjet/_fastjet_core/lib
     - $RPATH/libfastjet.so.0
     - $RPATH/libfastjettools.so.0
     - $RPATH/libsiscone.so.0
