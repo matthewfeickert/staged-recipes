@@ -14,7 +14,7 @@ index 72cb832..8dbbb0c 100644
 @@ -53,6 +53,7 @@ class FastJetBuild(setuptools.command.build_ext.build_ext):
          if not OUTPUT.exists():
              zip_filename = DIR / pathlib.Path(CGAL_ZIP).parts[-1]
- 
+
 +            """
              with urllib.request.urlopen(CGAL_ZIP) as http_obj:
                  with open(zip_filename, "wb") as file_obj:
@@ -25,7 +25,7 @@ index 72cb832..8dbbb0c 100644
                  zip_obj.extractall(DIR)
 +            """
 +            cgal_dir="${PREFIX}/include"
- 
+
              # Patch for FastJet core version 3.4.0
              # To be removed when https://gitlab.com/fastjet/fastjet/-/merge_requests/1 is merged upstream
 @@ -78,7 +81,8 @@ class FastJetBuild(setuptools.command.build_ext.build_ext):
@@ -36,7 +36,7 @@ index 72cb832..8dbbb0c 100644
 +            env["CXX"] = env.get("CXX", "g++")
 +            env["CXXFLAGS"] = env.get("CXXFLAGS", "") + " -O3 -Bstatic -lgmp -Bdynamic"
              env["ORIGIN"] = "$ORIGIN"  # if evaluated, it will still be '$ORIGIN'
- 
+
              args = [
 @@ -88,10 +92,9 @@ class FastJetBuild(setuptools.command.build_ext.build_ext):
                  "--enable-allcxxplugins",
@@ -46,9 +46,9 @@ index 72cb832..8dbbb0c 100644
                  "--enable-swig",
                  "--enable-pyext",
 -                "LDFLAGS=-Wl,-rpath,$$ORIGIN/_fastjet_core/lib:$$ORIGIN",
-+                f"LDFLAGS={os.environ.get('LDFLAGS', '')} -Wl,-rpath=$$ORIGIN/_fastjet_core/lib:$$ORIGIN",
++                f"LDFLAGS={os.environ.get('LDFLAGS', '')} -Wl,-rpath=$ORIGIN/_fastjet_core/lib:$ORIGIN",
              ]
- 
+
              try:
 @@ -121,6 +124,7 @@ class FastJetBuild(setuptools.command.build_ext.build_ext):
                  [
@@ -58,6 +58,6 @@ index 72cb832..8dbbb0c 100644
                      "CXXFLAGS=-O3 -Bstatic -Bdynamic -std=c++17",
                  ],
                  cwd=FASTJET_CONTRIB,
--- 
+--
 2.34.1
 

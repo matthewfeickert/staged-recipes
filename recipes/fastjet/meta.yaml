@@ -16,14 +16,21 @@ build:
   number: 0
   skip: true  # [not linux]
   script: {{ PYTHON }} -m pip install . -vv
+  # https://docs.conda.io/projects/conda-build/en/stable/resources/define-metadata.html#rpaths
   rpaths:
     - lib/
-    - _fastjet_core/lib/
+    # - lib/{{ PYTHON }}/site-packages/fastjet/_fastjet_core/lib
+  # https://docs.conda.io/projects/conda-build/en/stable/resources/define-metadata.html#whitelisting-shared-libraries
   missing_dso_whitelist:
     - $RPATH/libfastjet.so.0
     - $RPATH/libfastjettools.so.0
+    - $RPATH/libsiscone.so.0
     - $RPATH/libsiscone_spherical.so.0
     - $RPATH/libfastjetplugins.so.0
+    # # is this binary repackaging?
+    - $RPATH/libgmp.so.10
+    # - $RPATH/libstdc++.so.6
+    # - $RPATH/libgcc_s.so.1
 
 requirements:
   build:
@@ -41,11 +48,13 @@ requirements:
     - pybind11
     - python
     - cgal-cpp
+    # - gmp
   run:
     - awkward >=2
     - numpy >=1.13.3
     - python
     - vector
+    - gmp
 
 test:
   imports:
