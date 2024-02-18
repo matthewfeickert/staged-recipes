@@ -17,8 +17,8 @@ build:
   skip: true  # [not linux]
   script: {{ PYTHON }} -m pip install . -vv
   # https://docs.conda.io/projects/conda-build/en/stable/resources/define-metadata.html#rpaths
-  rpaths:
-    - lib/
+  # rpaths:
+  #   - lib/
   # https://docs.conda.io/projects/conda-build/en/stable/resources/define-metadata.html#whitelisting-shared-libraries
   missing_dso_whitelist:
     # All are under lib/python3.*/site-packages/fastjet/_fastjet_core/lib
@@ -49,7 +49,7 @@ requirements:
     - numpy >=1.13.3
     - python
     - vector
-    - gmp
+    - gmp  # As fastjet doesn't package the shared library
 
 test:
   imports:
