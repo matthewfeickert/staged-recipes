@@ -27,26 +27,26 @@ build:
 
 requirements:
   build:
-    - {{ compiler('c') }}
-    - {{ compiler('cxx') }}
     - make
     - libtool
     - automake
     - autoconf
     - swig
     - patch
-    - gmp  # In 'build' over 'host' as avoids 'ld: cannot find -lgmp: No such file or directory' error
   host:
+    - {{ compiler('c') }}  # In 'host' over 'build' so libgmp shared library will be found by linker
+    - {{ compiler('cxx') }}  # In 'host' over 'build' so libgmp shared library will be found by linker
     - pip
     - pybind11
     - python
     - cgal-cpp
+    - gmp
   run:
     - awkward >=2
     - numpy >=1.13.3
     - python
     - vector
-    - gmp  # As fastjet doesn't package the shared library
+    - gmp  # As fastjet-contrib doesn't package the shared library
 
 test:
   imports:
