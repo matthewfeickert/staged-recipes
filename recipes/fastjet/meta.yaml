@@ -47,7 +47,6 @@ requirements:
     - numpy >=1.13.3
     - python
     - vector
-    - gmp  # As fastjet-contrib doesn't package the shared library
 
 test:
   imports:
