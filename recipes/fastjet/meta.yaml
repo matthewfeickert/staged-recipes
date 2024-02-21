@@ -22,17 +22,10 @@ build:
   #   - '$ORIGIN/_fastjet_core/lib/'
   #   - '$ORIGIN/'
   #   - '$ORIGIN/../../../fastjet.libs/'
-  # missing_dso_whitelist:
+  missing_dso_whitelist:
   # https://docs.conda.io/projects/conda-build/en/stable/resources/define-metadata.html#whitelisting-shared-libraries
-  # All are under lib/python3.*/site-packages/fastjet/_fastjet_core/lib
-  #   - $RPATH/_fastjet.so.0
-  #   these are being asked for by
-  #   build_artifacts/fastjet_*/_h_env_*/lib/python3.9/site-packages/fastjet/_fastjet_core/lib/python3.*/site-packages/_fastjet.so.0
-  #   - $RPATH/libfastjet.so.0
-  #   - $RPATH/libfastjettools.so.0
-  #   - $RPATH/libsiscone.so.0
-  #   - $RPATH/libsiscone_spherical.so.0
-  #   - $RPATH/libfastjetplugins.so.0
+    - '*/.libs/lib*.so.*'
+    - '*/work*/*/*.so.*'
 
 requirements:
   build:
