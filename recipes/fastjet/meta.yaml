@@ -32,12 +32,12 @@ requirements:
     - {{ compiler('cxx') }}
     - autoconf
     - automake
+    - cgal-cpp
     - libtool
     - make
     - patch
     - swig
   host:
-    - cgal-cpp
     - gmp
     - pip
     - pybind11
