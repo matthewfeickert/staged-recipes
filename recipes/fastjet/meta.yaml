@@ -37,8 +37,8 @@ requirements:
     - patch
     - swig
   host:
-    - cgal-cpp
-    - gmp
+    - cgal-cpp  # headers and CGALv5
+    - gmp  # shared library
     - pip
     - pybind11
     - python
