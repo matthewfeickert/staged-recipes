@@ -30,18 +30,18 @@ requirements:
   build:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
-    - make
-    - libtool
-    - automake
     - autoconf
-    - swig
+    - automake
+    - libtool
+    - make
     - patch
+    - swig
   host:
+    - cgal-cpp
+    - gmp
     - pip
     - pybind11
     - python
-    - cgal-cpp
-    - gmp
   run:
     - awkward >=2
     - numpy >=1.13.3
