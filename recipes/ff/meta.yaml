@@ -1,0 +1,75 @@
+{% set name = "ff" %}
+{% set version = "2.0" %}
+
+package:
+  name: {{ name }}-static
+  version: {{ version }}
+
+source:
+    # url: https://github.com/hep-packaging-coordination/ff-{{ version }}.tar.gz
+    # sha256:
+    # Want to get a v2.0 so DON'T use the patched version from QCDLoop yet (that will be v2.0.1)
+    # The Makefile patch can be removed then.
+    git_url: https://github.com/hep-packaging-coordination/ff.git
+    git_rev: dbe1c4c23b49ed2c3463d8f55cf8c925b21155d6
+    patches:
+      - update-makefile.patch
+
+build:
+  skip: true  # [win]
+  number: 0
+  script:
+    # FIXME: Patch out custom paths
+    - sed -i "s|/user/gj/lib/|$PREFIX/share/ff/|g" src/ff/ffinit.f
+    - sed -i "s|/usr/local/ff/|$PREFIX/share/ff/|g" src/ff/ffinit.f
+
+    - cd src/ff
+    - make install FC=$FC FFLAGS="$FFLAGS -std=legacy -ffixed-line-length-none" DEST=$PREFIX/lib
+    - mkdir -p $PREFIX/include/ff
+    - mv *.h $PREFIX/include/ff
+    - mkdir -p $PREFIX/share/ff
+    - mv *.dat $PREFIX/share/ff/
+
+requirements:
+  build:
+    - {{ stdlib('c') }}
+    - {{ compiler('fortran') }}
+    - make
+    - libtool
+    - sed
+
+test:
+  source_files:
+    - src/ff/npointes.f
+  requires:
+    - {{ compiler('fortran') }}
+  commands:
+    - test -f $PREFIX/lib/libff.a
+    - test -f $PREFIX/include/ff/aa.h
+    - test -f $PREFIX/include/ff/ff.h
+    - test -f $PREFIX/include/ff/ffs.h
+    - test -f $PREFIX/share/ff/fferr.dat
+    - test -f $PREFIX/share/ff/ffperm5.dat
+    - test -f $PREFIX/share/ff/ffwarn.dat
+
+    - $FC ./src/ff/npointes.f -o npointes $FFLAGS -I$PREFIX/include/ff $LDFLAGS -lff
+    - ./npointes
+
+about:
+  home: https://github.com/hep-packaging-coordination/ff
+  summary: 'FF: a package to evaluate one-loop integrals'
+  description: |
+    FF is a package to evaluate one-loop integrals written by G. J.
+    van Oldenborgh, NIKHEF-H, Amsterdam. For the the algorithms used see
+    preprint NIKHEF-H 89/17, 'New Algorithms for One-loop Integrals', by
+    G.J. van Oldenborgh and J.A.M. Vermaseren, published in Zeitschrift
+    fuer Physik C46(1990)425.
+    [DOI: 10.1007/BF01621031](https://doi.org/10.1007/BF01621031)
+  license: MIT
+  license_family: MIT
+  license_file: LICENSE
+  dev_url: https://github.com/hep-packaging-coordination/ff
+
+extra:
+  recipe-maintainers:
+    - matthewfeickert
