@@ -1,0 +1,11 @@
+generate p p > t t~
+display particles
+display multiparticles
+
+add process p p > W+ j, W+ > l+ vl @2
+
+output MY_FIRST_MG5_RUN
+
+# From that directory you can run the command './bin/generate_events'
+
+launch MY_FIRST_MG5_RUN

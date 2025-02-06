@@ -1,0 +1,131 @@
+{% set name = "mg5amcnlo" %}
+{% set version = "3.5.7" %}
+
+package:
+  name: {{ name }}
+  version: {{ version }}
+
+source:
+  - url: https://github.com/hep-packaging-coordination/mg5amcnlo-release-mirror/releases/download/{{ version }}/MG5_aMC_v{{ version }}.tar.gz
+    sha256: ca3e027f078438318bd4143a102aebc2d51358f537b5d52bbc574fe49a6a901e
+    folder: source
+    patches:
+      # FIXME: mg5amcnlo assumes that ninja and collier are only static libraries
+      - allow-for-shared-libraries.patch
+
+build:
+  skip: true  # [win]
+  number: 0
+  script:
+    # Remove unnecessary files
+    - cd source
+    - rm -r .github
+    - rm -r tests
+    - rm -r vendor/CutTools
+    - rm .bzrignore
+    - rm .gitignore
+    - rm code-notes
+    - rm README
+    - rm UpdateNotes.txt
+    - cd ..
+
+    - mv source $PREFIX/MG5_aMC
+
+    # Build configuration file
+    - sed -i "s|# fortran_compiler = None|fortran_compiler = $(command -v $FC)|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
+    - sed -i "s|# f2py_compiler_py3 = None|f2py_compiler_py3 = $PREFIX/bin/f2py|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
+    - sed -i "s|# cpp_compiler = None|cpp_compiler = $(command -v $GXX)|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
+    - sed -i "s|# lhapdf_py3 = lhapdf-config|lhapdf_py3 = $PREFIX/bin/lhapdf-config|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
+    - sed -i "s|# fastjet = fastjet-config|fastjet = $PREFIX/bin/fastjet-config|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
+    - sed -i "s|# eMELA = eMELA-config|eMELA = $PREFIX/bin/eMELA-config|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
+    - sed -i "s|# ninja = ./HEPTools/lib|ninja = $PREFIX/lib|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
+    - sed -i "s|# collier = ./HEPTools/lib|collier = $PREFIX/lib|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
+
+    # Fix bugs
+    # symlink doesn't get copied over correctly for templating
+    # Need to use force to avoid conda-build erroring as Source/PDF/eePDF.inc is a symlink to Source/eepdf.inc
+    - cp -f $PREFIX/MG5_aMC/Template/Common/Source/eepdf.inc $PREFIX/MG5_aMC/Template/Common/Source/PDF/
+
+    # Setup links
+    - ln -s $PREFIX/MG5_aMC/bin/mg5_aMC $PREFIX/bin/mg5_aMC
+    - mkdir -p $PREFIX/share/mg5_aMC
+    - ln -s $PREFIX/MG5_aMC/proc_card.dat $PREFIX/share/mg5_aMC/proc_card.dat
+
+    # Generate initial files
+    - echo "exit" | mg5_aMC
+    - rm py.py
+
+requirements:
+  build:
+    - {{ stdlib('c') }}
+    - {{ compiler('cxx') }}
+    - {{ compiler('fortran') }}
+    - libtool
+    - make
+    - sed
+  run:
+    # mg5amcnlo is a code generator and so requires a build system at runtime
+    - {{ compiler('cxx') }}
+    - {{ compiler('fortran') }}
+    - libtool
+    - make
+    - tar
+    - perl
+    - python
+    - six
+    - numpy
+    - fastjet-contrib
+    - emela
+    - lhapdf
+    - pythia8
+    - ply
+    - oneloop
+    - ninja-hep-ph
+    - collier
+
+test:
+  source_files:
+    - tutorial.mg5
+  commands:
+    - test -f $PREFIX/bin/mg5_aMC
+
+    - test -d $PREFIX/MG5_aMC
+    - test -f $PREFIX/MG5_aMC/input/mg5_configuration.txt
+
+    - echo -e "\n# Checking mg5_configuration.txt"
+    - cat $PREFIX/MG5_aMC/input/mg5_configuration.txt
+
+    - mg5_aMC --help
+
+    - echo "exit" | mg5_aMC
+
+    - mg5_aMC tutorial.mg5
+
+about:
+  home: https://github.com/mg5amcnlo/mg5amcnlo
+  summary: 'MadGraph5_aMC@NLO'
+  description: |
+    MadGraph5_aMC@NLO is a framework that aims at providing all the elements
+    necessary for SM and BSM phenomenology, such as the computations of cross
+    sections, the generation of hard events and their matching with event
+    generators, and the use of a variety of tools relevant to event manipulation
+    and analysis.
+    Processes can be simulated to LO accuracy for any user-defined Lagrangian,
+    and the NLO accuracy in the case of models that support this kind of calculations
+    &mdash; prominent among these are QCD and EW corrections to SM processes.
+    Matrix elements at the tree- and one-loop-level can also be obtained.
+
+    MadGraph5_aMC@NLO is the new version of both MadGraph5 and aMC@NLO that unifies
+    the LO and NLO lines of development of automated tools within the MadGraph family.
+    As such, the code allows one to simulate processes in virtually all configurations
+    of interest, in particular for hadronic and e+e- colliders; starting from version
+    3.2.0, the latter include Initial State Radiation and beamstrahlung effects.
+  # modified University of Illinois/NCSA license
+  license: LicenseRef-NCSA
+  license_family: OTHER
+  license_file: source/LICENSE
+  dev_url: https://github.com/mg5amcnlo/mg5amcnlo
+
+extra:
+  recipe-maintainers:
+    - matthewfeickert
