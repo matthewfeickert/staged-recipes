@@ -32,6 +32,7 @@ build:
     - cp -r source $PREFIX/MG5_aMC
 
     # Build configuration file
+
     # - sed -i "s|# fortran_compiler = None|fortran_compiler = $(command -v $FC)|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
     # - sed -i "s|# f2py_compiler_py3 = None|f2py_compiler_py3 = $PREFIX/bin/f2py|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
     # - sed -i "s|# cpp_compiler = None|cpp_compiler = $(command -v $GXX)|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
@@ -42,6 +43,7 @@ build:
     # - sed -i "s|# collier = ./HEPTools/lib|collier = $PREFIX/lib|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
 
     - cp $RECIPE_DIR/mg5_configuration.txt .
+    - sed -i "s/REPLACE_WITH_PREFIX/$PREFIX/g" mg5_configuration.txt
     - sed -i "s/REPLACE_WITH_BASENAME_FC/$(basename $FC)/g" mg5_configuration.txt
     - sed -i "s/REPLACE_WITH_BASENAME_GXX/$(basename $GXX)/g" mg5_configuration.txt
     - mv mg5_configuration.txt $PREFIX/MG5_aMC/input/mg5_configuration.txt
