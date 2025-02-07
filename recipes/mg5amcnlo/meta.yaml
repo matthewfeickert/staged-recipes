@@ -14,22 +14,20 @@ source:
       - allow-for-shared-libraries.patch
 
 build:
-  skip: true  # [win]
+  skip: true  # [win and py<3.7 and py>=3.12]
   number: 0
   script:
     # Remove unnecessary files
-    - cd source
-    - rm -r .github
-    - rm -r tests
-    - rm -r vendor/CutTools
-    - rm .bzrignore
-    - rm .gitignore
-    - rm code-notes
-    - rm README
-    - rm UpdateNotes.txt
-    - cd ..
+    - rm -r source/.github
+    - rm -r source/tests
+    - rm -r source/vendor/CutTools
+    - rm source/.bzrignore
+    - rm source/.gitignore
+    - rm source/code-notes
+    - rm source/README
+    - rm source/UpdateNotes.txt
 
-    - mv source $PREFIX/MG5_aMC
+    - cp -r source $PREFIX/MG5_aMC
 
     # Build configuration file
     # - sed -i "s|# fortran_compiler = None|fortran_compiler = $(command -v $FC)|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
@@ -41,9 +39,10 @@ build:
     # - sed -i "s|# ninja = ./HEPTools/lib|ninja = $PREFIX/lib|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
     # - sed -i "s|# collier = ./HEPTools/lib|collier = $PREFIX/lib|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
 
+    - cp $RECIPE_DIR/mg5_configuration.txt .
     - sed -i "s/REPLACE_WITH_BASENAME_FC/$(basename $FC)/g" mg5_configuration.txt
-    - sed -i "s/REPLACE_WITH_BASENAME_$GXX/$(basename $GXX)/g" mg5_configuration.txt
-    - cp mg5_configuration.txt $PREFIX/MG5_aMC/input/mg5_configuration.txt
+    - sed -i "s/REPLACE_WITH_BASENAME_GXX/$(basename $GXX)/g" mg5_configuration.txt
+    - mv mg5_configuration.txt $PREFIX/MG5_aMC/input/mg5_configuration.txt
 
     - cat $PREFIX/MG5_aMC/input/mg5_configuration.txt
 
@@ -72,6 +71,12 @@ requirements:
     - libtool
     - make
     - sed
+  host:
+    - python
+    - six
+    - fastjet-cxx
+    - emela
+    - lhapdf
   run:
     # mg5amcnlo is a code generator and so requires a build system at runtime
     - {{ compiler('cxx') }}
@@ -93,8 +98,8 @@ requirements:
     - collier
 
 test:
-  source_files:
-    - tutorial.mg5
+  files:
+    - $RECIPE_DIR/tutorial.mg5
   commands:
     - test -f $PREFIX/bin/mg5_aMC
 
@@ -108,7 +113,7 @@ test:
 
     - echo "exit" | mg5_aMC
 
-    - mg5_aMC tutorial.mg5
+    - mg5_aMC $RECIPE_DIR/tutorial.mg5
 
 about:
   home: https://github.com/mg5amcnlo/mg5amcnlo
