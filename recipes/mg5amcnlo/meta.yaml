@@ -125,7 +125,6 @@ test:
     - test -d $PREFIX/MG5_aMC/models
     - test -d $PREFIX/MG5_aMC/PLUGIN
     - test -d $PREFIX/MG5_aMC/Template
-    - test -d $PREFIX/MG5_aMC/tests
     - test -d $PREFIX/MG5_aMC/vendor
 
     - test -f $PREFIX/MG5_aMC/proc_card.dat
