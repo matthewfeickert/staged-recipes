@@ -83,6 +83,9 @@ build:
     - echo "exit" | mg5_aMC
     - rm py.py
 
+    # Remove .pyc files
+    - find $PREFIX/MG5_aMC -type f -iname "*.pyc" -delete
+
 requirements:
   build:
     - {{ stdlib('c') }}
