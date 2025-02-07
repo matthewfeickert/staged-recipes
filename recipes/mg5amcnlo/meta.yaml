@@ -34,17 +34,8 @@ build:
 
     - cp -r source $PREFIX/MG5_aMC
 
-    # # Add MG5aMC_PY8_interface
-    # - curl -sL https://github.com/mg5amcnlo/MG5aMC_PY8_interface/archive/5d82df1b77bd2b69ffeae5b6bfe100a62b31c30e.tar.gz | tar -xz
-    # - mv MG5aMC_PY8_interface-5d82df1b77bd2b69ffeae5b6bfe100a62b31c30e MG5aMC_PY8_interface
-    # - cd MG5aMC_PY8_interface
-    # - ls -lhtra
-    # # - python compile.py $PREFIX
-    # - ls -lhtra
-    # - mkdir -p $PREFIX/MG5_aMC/HEPTools/MG5aMC_PY8_interface
-    # - cd ..
-    # - cp MG5aMC_PY8_interface/* $PREFIX/MG5_aMC/HEPTools/MG5aMC_PY8_interface/
-    # - rm -rf MG5aMC_PY8_interface
+    # TODO: Add MG5aMC_PY8_interface
+    # https://github.com/mg5amcnlo/MG5aMC_PY8_interface
 
     # Build configuration file be replacing placeholder values with PREFIX
     - cp $RECIPE_DIR/mg5_configuration.txt .
@@ -100,7 +91,7 @@ requirements:
     - fastjet-contrib
     - emela
     - lhapdf
-    # - pythia8
+    - pythia8
     - ply
     - oneloop
     - ninja-hep-ph
