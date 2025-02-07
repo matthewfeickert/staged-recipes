@@ -32,21 +32,30 @@ build:
     - mv source $PREFIX/MG5_aMC
 
     # Build configuration file
-    - sed -i "s|# fortran_compiler = None|fortran_compiler = $(command -v $FC)|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
-    - sed -i "s|# f2py_compiler_py3 = None|f2py_compiler_py3 = $PREFIX/bin/f2py|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
-    - sed -i "s|# cpp_compiler = None|cpp_compiler = $(command -v $GXX)|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
-    - sed -i "s|# lhapdf_py3 = lhapdf-config|lhapdf_py3 = $PREFIX/bin/lhapdf-config|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
-    - sed -i "s|# fastjet = fastjet-config|fastjet = $PREFIX/bin/fastjet-config|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
-    - sed -i "s|# eMELA = eMELA-config|eMELA = $PREFIX/bin/eMELA-config|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
-    - sed -i "s|# ninja = ./HEPTools/lib|ninja = $PREFIX/lib|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
-    - sed -i "s|# collier = ./HEPTools/lib|collier = $PREFIX/lib|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
+    # - sed -i "s|# fortran_compiler = None|fortran_compiler = $(command -v $FC)|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
+    # - sed -i "s|# f2py_compiler_py3 = None|f2py_compiler_py3 = $PREFIX/bin/f2py|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
+    # - sed -i "s|# cpp_compiler = None|cpp_compiler = $(command -v $GXX)|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
+    # - sed -i "s|# lhapdf_py3 = lhapdf-config|lhapdf_py3 = $PREFIX/bin/lhapdf-config|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
+    # - sed -i "s|# fastjet = fastjet-config|fastjet = $PREFIX/bin/fastjet-config|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
+    # - sed -i "s|# eMELA = eMELA-config|eMELA = $PREFIX/bin/eMELA-config|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
+    # - sed -i "s|# ninja = ./HEPTools/lib|ninja = $PREFIX/lib|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
+    # - sed -i "s|# collier = ./HEPTools/lib|collier = $PREFIX/lib|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
+
+    - sed -i "s/REPLACE_WITH_BASENAME_FC/$(basename $FC)/g" mg5_configuration.txt
+    - sed -i "s/REPLACE_WITH_BASENAME_$GXX/$(basename $GXX)/g" mg5_configuration.txt
+    - cp mg5_configuration.txt $PREFIX/MG5_aMC/input/mg5_configuration.txt
+
+    - cat $PREFIX/MG5_aMC/input/mg5_configuration.txt
 
     # Fix bugs
     # symlink doesn't get copied over correctly for templating
-    # Need to use force to avoid conda-build erroring as Source/PDF/eePDF.inc is a symlink to Source/eepdf.inc
-    - cp -f $PREFIX/MG5_aMC/Template/Common/Source/eepdf.inc $PREFIX/MG5_aMC/Template/Common/Source/PDF/
+    # Need to get around conda-build erroring as Source/PDF/eePDF.inc is a symlink to Source/eepdf.inc
+    # - cp -f $PREFIX/MG5_aMC/Template/Common/Source/eepdf.inc $PREFIX/MG5_aMC/Template/Common/Source/PDF/
+    - cp $PREFIX/MG5_aMC/Template/Common/Source/eepdf.inc .
+    - mv eepdf.inc $PREFIX/MG5_aMC/Template/Common/Source/PDF/eepdf.inc
 
     # Setup links
+    - mkdir -p $PREFIX/bin
     - ln -s $PREFIX/MG5_aMC/bin/mg5_aMC $PREFIX/bin/mg5_aMC
     - mkdir -p $PREFIX/share/mg5_aMC
     - ln -s $PREFIX/MG5_aMC/proc_card.dat $PREFIX/share/mg5_aMC/proc_card.dat
