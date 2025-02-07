@@ -74,7 +74,7 @@ pythia8_path = REPLACE_WITH_PREFIX
 #!  steer the Pythia8 shower.
 #!  Can be installed directly from within MG5_aMC with the following command:
 #!     MG5_aMC> install mg5amc_py8_interface
-# mg5amc_py8_interface_path = ./HEPTools/MG5aMC_PY8_interface
+mg5amc_py8_interface_path = ./HEPTools/MG5aMC_PY8_interface
 
 #! Herwig++/Herwig7 paths
 #!  specify here the paths also to HepMC ant ThePEG
