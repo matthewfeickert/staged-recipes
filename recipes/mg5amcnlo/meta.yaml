@@ -14,7 +14,9 @@ source:
       - allow-for-shared-libraries.patch
 
 build:
-  skip: true  # [win and py<3.7 and py>=3.12]
+  skip: true  # [win]
+  # skip: true  # [py<3.7 and py>=3.12]
+  skip: true  # [py<3.11 and py>=3.12]
   number: 0
   script:
     # Remove unnecessary files
@@ -85,7 +87,7 @@ requirements:
     - make
     - tar
     - perl
-    - python
+    - python >=3.11,<3.12
     - six
     - numpy
     - fastjet-contrib
