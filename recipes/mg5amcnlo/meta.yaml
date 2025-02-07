@@ -66,10 +66,10 @@ requirements:
   build:
     - {{ stdlib('c') }}
     # Compilers needed to set names in mg5_configuration.txt and will be
-    # used in the future when bugs with Pythia8 are fixed
+    # used in the future along with make when bugs with Pythia8 are fixed
     - {{ compiler('cxx') }}
     - {{ compiler('fortran') }}
-    - make
+    # - make
     - sed
     - grep
   host:
