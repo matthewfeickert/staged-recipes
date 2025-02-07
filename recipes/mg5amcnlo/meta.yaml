@@ -40,7 +40,8 @@ build:
     - mv MG5aMC_PY8_interface-5d82df1b77bd2b69ffeae5b6bfe100a62b31c30e MG5aMC_PY8_interface
     - cd MG5aMC_PY8_interface
     - ls -lhtra
-    - python compile.py $PREFIX
+    # - python compile.py $PREFIX
+    - ls -lhtra
     - mkdir -p $PREFIX/MG5_aMC/HEPTools/MG5aMC_PY8_interface
     - cd ..
     - cp MG5aMC_PY8_interface/* $PREFIX/MG5_aMC/HEPTools/MG5aMC_PY8_interface/
