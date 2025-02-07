@@ -79,11 +79,10 @@ build:
     - ln -s $PREFIX/MG5_aMC/proc_card.dat $PREFIX/share/mg5_aMC/proc_card.dat
 
     # Generate initial files
+    # conda-build intentionally compiles .pyc files, so keep those.
+    # c.f. https://docs.conda.io/projects/conda-build/en/stable/resources/define-metadata.html#skip-compiling-some-py-files-into-pyc-files
     - echo "exit" | mg5_aMC
     - rm py.py
-
-    # Remove .pyc files
-    - find $PREFIX/MG5_aMC -type f -iname "*.pyc" -delete
 
 requirements:
   build:
