@@ -29,6 +29,10 @@ build:
     - rm source/README
     - rm source/UpdateNotes.txt
 
+    # Fix bugs
+    # FIXME: Use user space perl instead of system perl
+    - find source -type f -exec grep -Il '#!/usr/bin/perl -w' {} + | xargs sed -i 's|#!/usr/bin/perl -w|#!/usr/bin/env perl -w|g'
+
     - cp -r source $PREFIX/MG5_aMC
 
     # Build configuration file
@@ -75,6 +79,7 @@ requirements:
     - libtool
     - make
     - sed
+    - grep
   host:
     - python
     - six
