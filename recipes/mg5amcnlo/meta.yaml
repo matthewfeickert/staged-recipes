@@ -89,7 +89,7 @@ requirements:
     - make
     - tar
     - perl
-    - python >=3.11,<3.12
+    - python
     - six
     - numpy
     - fastjet-contrib
