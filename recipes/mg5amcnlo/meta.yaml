@@ -15,7 +15,8 @@ source:
 
 build:
   # FIXME: mg5amcnlo doesn't support Python 3.12 yet
-  skip: true  # [py<37 or py>311 or win]
+  # skip: true  # [py<37 or py>311 or win]
+  skip: true  # [py<311 or py>311 or win]
   number: 0
   script:
     # Remove unnecessary files
