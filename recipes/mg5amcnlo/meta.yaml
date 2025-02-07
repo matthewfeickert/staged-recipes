@@ -114,10 +114,25 @@ test:
   files:
     - $RECIPE_DIR/tutorial.mg5
   commands:
-    - test -f $PREFIX/bin/mg5_aMC
-
     - test -d $PREFIX/MG5_aMC
+    - test -d $PREFIX/MG5_aMC/aloha
+    - test -d $PREFIX/MG5_aMC/bin
+    - test -d $PREFIX/MG5_aMC/HELAS
+    - test -d $PREFIX/MG5_aMC/input
+    - test -d $PREFIX/MG5_aMC/madgraph
+    - test -d $PREFIX/MG5_aMC/MadSpin
+    - test -d $PREFIX/MG5_aMC/mg5decay
+    - test -d $PREFIX/MG5_aMC/models
+    - test -d $PREFIX/MG5_aMC/PLUGIN
+    - test -d $PREFIX/MG5_aMC/Template
+    - test -d $PREFIX/MG5_aMC/tests
+    - test -d $PREFIX/MG5_aMC/vendor
+
+    - test -f $PREFIX/MG5_aMC/proc_card.dat
+    - test -f $PREFIX/MG5_aMC/VERSION
+    - test -f $PREFIX/bin/mg5_aMC
     - test -f $PREFIX/MG5_aMC/input/mg5_configuration.txt
+    - test -f $PREFIX/MG5_aMC/madgraph/LICENSE
 
     - echo -e "\n# Checking mg5_configuration.txt"
     - cat $PREFIX/MG5_aMC/input/mg5_configuration.txt
