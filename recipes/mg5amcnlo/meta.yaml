@@ -43,9 +43,9 @@ build:
     # - sed -i "s|# collier = ./HEPTools/lib|collier = $PREFIX/lib|g" $PREFIX/MG5_aMC/input/mg5_configuration.txt
 
     - cp $RECIPE_DIR/mg5_configuration.txt .
-    - sed -i "s/REPLACE_WITH_PREFIX/$PREFIX/g" mg5_configuration.txt
-    - sed -i "s/REPLACE_WITH_BASENAME_FC/$(basename $FC)/g" mg5_configuration.txt
-    - sed -i "s/REPLACE_WITH_BASENAME_GXX/$(basename $GXX)/g" mg5_configuration.txt
+    - sed -i "s|REPLACE_WITH_PREFIX|$PREFIX|g" mg5_configuration.txt
+    - sed -i "s|REPLACE_WITH_BASENAME_FC|$(basename $FC)|g" mg5_configuration.txt
+    - sed -i "s|REPLACE_WITH_BASENAME_GXX|$(basename $GXX)|g" mg5_configuration.txt
     - mv mg5_configuration.txt $PREFIX/MG5_aMC/input/mg5_configuration.txt
 
     - cat $PREFIX/MG5_aMC/input/mg5_configuration.txt
