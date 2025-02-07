@@ -57,7 +57,7 @@ cpp_compiler = REPLACE_WITH_PREFIX/bin/REPLACE_WITH_BASENAME_GXX
 
 #! Prefered PS viewer
 #!  If None: try to find one available on the system
-# eps_viewer = None
+eps_viewer = REPLACE_WITH_PREFIX/bin/gs
 
 #! Time allowed to answer question (if no answer takes default value)
 #!  0: No time limit
