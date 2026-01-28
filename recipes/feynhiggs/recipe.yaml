@@ -74,7 +74,6 @@ outputs:
             - table
           files:
             # tests
-            - etc/conda/test-files/feynhiggs-static/0/tests/*
             - etc/conda/test-files/feynhiggs-static/0/example/*
 
       - files:
