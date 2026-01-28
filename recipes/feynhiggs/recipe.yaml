@@ -28,6 +28,7 @@ outputs:
         - ./configure --help
         - export FFLAGS="${DEBUG_FFLAGS//-fimplicit-none/}"
         - export FFLAGS="${FFLAGS//-fcheck=all/-fcheck=do,mem,pointer,recursion,bits}"
+        - export FFLAGS="${FFLAGS//-fstack-protector-all/-fstack-protector-strong}"
         - export CFLAGS=$DEBUG_CFLAGS
         - export CXXFLAGS=$DEBUG_CXXFLAGS
         - export FFLAGS="-ffixed-line-length-none -std=legacy $FFLAGS"
