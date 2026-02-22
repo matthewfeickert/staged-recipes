@@ -1,0 +1,62 @@
+{% set name = "omniwatermask" %}
+{% set version = "0.4.2" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/omniwatermask-{{ version }}.tar.gz
+  sha256: 8e808f06e738f42de43b3d733f08f82e0364119d778be26ac71d8d79d3c749df
+
+build:
+  noarch: python
+  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+  number: 0
+
+requirements:
+  host:
+    - python {{ python_min }}
+    - setuptools >=61.0
+    - pip
+  run:
+    - python >={{ python_min }}
+    - numpy >=2.0,<2.4
+    - omnicloudmask >=1.7.0
+    - opencv >=4.9.0.80
+    - geopandas >=1.0
+    - osmnx >=2.0.0
+    - scipy >=1.10.0
+    - pyarrow >=10.0.0
+    - huggingface_hub >=0.28.1
+    - safetensors >=0.3.0
+    - gdown >=5.1.0
+    - rasterio >=1.3
+    - timm >=0.9
+    - pytorch >=2.3.0
+    - tqdm >=4.0
+    - platformdirs >=4.0.0
+    - fastai >=2.7
+
+test:
+  imports:
+    - omniwatermask
+  commands:
+    - pip check
+  requires:
+    - pip
+    - python {{ python_min }}
+
+about:
+  home: https://github.com/DPIRD-DMA/OmniWaterMask
+  summary: Python library for water segmentation in high to moderate resolution remotely sensed imagery
+  description: |
+    Python library for high-accuracy water segmentation in satellite and aerial imagery, combining deep learning with NDWI and vector data for robust detection across multiple sensors and resolutions.
+  license: MIT
+  license_file: LICENSE
+  doc_url: https://github.com/DPIRD-DMA/OmniWaterMask
+  dev_url: https://github.com/DPIRD-DMA/OmniWaterMask
+
+extra:
+  recipe-maintainers:
+    - giswqs
