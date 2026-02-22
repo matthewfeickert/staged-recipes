@@ -1,0 +1,43 @@
+{% set version = "0.2.7" %}
+
+package:
+  name: julius
+  version: {{ version }}
+
+source:
+  url: https://pypi.org/packages/source/j/julius/julius-{{ version }}.tar.gz
+  sha256: 3c0f5f5306d7d6016fcc95196b274cae6f07e2c9596eed314e4e7641554fbb08
+
+build:
+  skip: true  # [py<36]
+  noarch: python
+  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+  number: 0
+
+requirements:
+  host:
+    - python
+    - pip
+    - setuptools
+  run:
+    - python
+    - pytorch >=1.7.0
+
+test:
+  imports:
+    - julius
+  commands:
+    - pip check
+  requires:
+    - pip
+    - python
+
+about:
+  home: https://github.com/adefossez/julius
+  summary: 'Nice DSP sweets: resampling, FFT Convolutions. All with PyTorch, differentiable and with CUDA support.'
+  license: MIT
+  license_file: LICENSE
+
+extra:
+  recipe-maintainers:
+    - fitzgeralddp
