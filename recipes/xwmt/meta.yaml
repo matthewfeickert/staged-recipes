@@ -1,6 +1,6 @@
 {% set name = "xwmt" %}
 {% set version = "0.1.0" %}
-{% set python_min = "3.8" %}
+{% set python_min = "3.11" %}
 
 package:
   name: {{ name|lower }}
@@ -26,6 +26,7 @@ requirements:
     - numba
     - numpy
     - bottleneck
+    - pandas
     - xarray
     - xhistogram
     - xgcm >=0.9.0
