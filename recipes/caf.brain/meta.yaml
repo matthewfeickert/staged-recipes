@@ -1,4 +1,4 @@
-{% set version = "0.1.0" %}
+{% set version = "0.1.1" %}
 {% set python_min = "3.10" %}
 
 package:
@@ -7,7 +7,7 @@ package:
 
 source:
   url: https://pypi.org/packages/source/c/caf.brain/caf_brain-{{ version }}.tar.gz
-  sha256: be01c4a3b1d9c11dec3a45693a06d2c06ba63e50de04d9040a0f74e75b2d81e2
+  sha256: f8fdefe414284cb2bdb20c1ce026939296cfcb356749836db764cb8b8f3116fe
 
 build:
   entry_points:
