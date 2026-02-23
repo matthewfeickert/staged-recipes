@@ -49,5 +49,5 @@ about:
   repository: https://github.com/roaldarbol/boris-clip
 
 extra:
-  maintainers:
+  recipe-maintainers:
     - roaldarbol
