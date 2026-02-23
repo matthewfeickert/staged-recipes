@@ -1,0 +1,51 @@
+{% set name = "damn" %}
+{% set version = "0.1.1" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  url: https://github.com/brsynth/damn_library/archive/refs/tags/{{ version }}.tar.gz
+  sha256: 3d664a45ba6d71ffdc2ad73be225f1daa2ee0963abdd95cb611aad5df51879c5
+
+build:
+  number: 0
+  noarch: python
+  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+
+requirements:
+  host:
+    - python {{ python_min }}
+    - setuptools
+    - pip
+  run:
+    - python >={{ python_min }}
+    - numpy =1.23.5
+    - pandas
+    - scipy
+    - scikit-learn
+    - matplotlib-base
+    - cobra =0.29.1
+    - tensorflow =2.16.2
+    - keras =3.9.2
+
+test:
+  source_files: 
+    - tests/
+  imports:
+    - damn
+  requires:
+    - python {{ python_min }}
+  commands:
+    - python -m damn --help
+
+about:
+  home: https://github.com/brsynth/damn_library
+  summary: "dAMN Hybrid Neural Network Framework for Dynamic Flux Balance Analysis (dFBA)."
+  license: MIT
+  license_file: LICENSE
+
+extra:
+  recipe-maintainers:
+    - ramez17khaled
