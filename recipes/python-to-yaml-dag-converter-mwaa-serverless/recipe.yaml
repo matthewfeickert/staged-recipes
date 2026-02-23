@@ -1,7 +1,7 @@
 schema_version: 1
 
 context:
-  version: 0.1.1
+  version: 0.1.2
   python_min: "3.10"
 
 package:
@@ -10,7 +10,7 @@ package:
 
 source:
   url: https://pypi.org/packages/source/p/python-to-yaml-dag-converter-mwaa-serverless/python_to_yaml_dag_converter_mwaa_serverless-${{ version }}.tar.gz
-  sha256: 2f65c2b6a0a4a37364120907d3c0e88492cab8209014ac4593895165095765e1
+  sha256: d46489f896293d28246459dedee094329c136fbd64abcdc431455635c207c473 
 
 build:
   number: 0
