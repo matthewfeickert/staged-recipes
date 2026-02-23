@@ -34,6 +34,7 @@ requirements:
     - dag-factory ==1.0.1
     - rich >=13.7.1,<15.0.0
     - fastapi ==0.121.2
+    - cadwyn ==5.6.1
 
 tests:
   - python:
