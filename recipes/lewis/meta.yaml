@@ -1,5 +1,6 @@
 {% set name = "lewis" %}
 {% set version = "1.3.5" %}
+{% set python_min = "3.12" %}
 
 package:
   name: {{ name|lower }}
@@ -29,7 +30,7 @@ requirements:
     - semantic_version
     - pyyaml
     - scanf
-    - pyasynchat  # [py>=312]
+    - pyasynchat
 
 test:
   imports:
