@@ -42,7 +42,7 @@ test:
   commands:
     - pip check
     - lewis --help
-    - lewis-control --help
+    - lewis-control -h
 
 about:
   home: https://github.com/ISISComputingGroup/lewis
