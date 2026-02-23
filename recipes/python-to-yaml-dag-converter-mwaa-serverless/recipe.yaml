@@ -39,7 +39,7 @@ tests:
   - python:
       python_version: ${{ python_min }}.*
       imports:
-        - python_to_yaml_dag_converter_mwaa_serverless
+        - dag_converter 
       pip_check: true
   - requirements:
       run:
