@@ -19,17 +19,18 @@ build:
 
 requirements:
   host:
-    - python >=3.10
+    - python ${{ python_min }}.*
     - pip
     - hatchling
   run:
-    - python >=3.10
+    - python >=${{ python_min }}
     - click >=8.0
     - pandas >=1.5
     - ffmpeg
 
 tests:
   - python:
+      python_version: ${{ python_min }}.*
       imports:
         - boris_clip
       pip_check: true
