@@ -1,0 +1,44 @@
+schema_version: 1
+
+context:
+  version: 0.0.7
+
+package:
+  name: sigmatch
+  version: ${{ version }}
+
+source:
+  url: https://pypi.org/packages/source/s/sigmatch/sigmatch-${{ version }}.tar.gz
+  sha256: 3d1f23abe0f4e09cd67c24c83b148e90a1528241298386ab65fef135b9ac44fc
+
+build:
+  number: 0
+  noarch: python
+  script: ${{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+
+requirements:
+  host:
+    - python ${{ python_min }}.*
+    - setuptools ==68.0.0
+    - pip
+  run:
+    - python >=${{ python_min }
+    - printo >=0.0.10
+
+tests:
+  - python:
+      imports:
+        - sigmatch
+      pip_check: true
+      python_version: ${{ python_min }}.*
+
+about:
+  summary: A quick way to verify function signatures in Python
+  license: MIT
+  license_file: LICENSE
+  homepage: https://pypi.org/project/sigmatch/
+  repository: https://github.com/mutating/sigmatch
+
+extra:
+  recipe-maintainers:
+    - thewchan
