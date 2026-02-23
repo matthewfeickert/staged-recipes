@@ -2,7 +2,7 @@ schema_version: 1
 
 context:
   python_min: 3.10
-  version: 1.0.0
+  version: 1.0.1
 
 package:
   name: livvext
@@ -10,7 +10,7 @@ package:
 
 source:
   url: https://pypi.org/packages/source/l/livvext/livvext-${{ version }}.tar.gz
-  sha256: 646c1333ab8f284947c97d2c7a7622c49ad06ba48c0baf11413c17bdf0a88c44
+  sha256: ec90302d09a438e806282e29f396514ed82fda091103c57165617b16cd84ae3f
 
 build:
   number: 0
@@ -29,7 +29,7 @@ requirements:
   run:
     - python >=${{ python_min }}
     - numpy >=2.2.6
-    - scipy >=1.15.3
+    - scipy >=1.17.0
     - xarray >=2025.6.1
     - dask-core >=2026.1.2
     - seaborn >=0.13.2
