@@ -8,7 +8,7 @@ package:
 
 
 source:
-  url: https://pypi.org/packages/source/s/nxs-analysis-tools/#nxs_analysis_tools-{{ version }}.tar.gz
+  url: https://files.pythonhosted.org/packages/51/24/08be297bd13b9b97ce19fadd027ac4d14feb2487136bbcd17e0397652351/nxs_analysis_tools-0.1.14.tar.gz
   sha256: f9a4b89c9769e0d1c585426d1881e1bebc72af3b09bf3760d7e1ef8cba1253ac
 
 build:
