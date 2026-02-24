@@ -1,5 +1,5 @@
 {% set name = "xwmb" %}
-{% set version = "0.5.5" %}
+{% set version = "0.5.6" %}
 {% set python_min = "3.11" %}
 
 package:
@@ -8,7 +8,7 @@ package:
 
 source:
   url: https://pypi.org/packages/source/x/xwmb/xwmb-{{ version }}.tar.gz
-  sha256: 14a2b1cf88b857272e4d0af9793bc17e75a4b02247a765230cfd382181773b61
+  sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 
 build:
   noarch: python
