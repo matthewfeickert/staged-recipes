@@ -10,7 +10,7 @@ package:
 
 source:
   url: https://pypi.org/packages/source/p/python-to-yaml-dag-converter-mwaa-serverless/python_to_yaml_dag_converter_mwaa_serverless-${{ version }}.tar.gz
-  sha256: d46489f896293d28246459dedee094329c136fbd64abcdc431455635c207c473 
+  sha256: b2d341e5489eb1d35847130c08f532a718492ecb42d6b0b8764f7b244c682956 
 
 build:
   number: 0
