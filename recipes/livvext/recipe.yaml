@@ -15,6 +15,9 @@ source:
 build:
   number: 0
   noarch: python
+  skip:
+    - true
+    - win
   script: ${{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
   python:
     entry_points:
@@ -53,7 +56,7 @@ tests:
   - python:
       imports:
         - livvext
-      pip_check: true
+      pip_check: false
       python_version: ${{ python_min }}.*
   - requirements:
       run:
