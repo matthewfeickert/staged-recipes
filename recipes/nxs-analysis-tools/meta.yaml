@@ -6,8 +6,9 @@ package:
   name: {{ name|lower }}
   version: {{ version }}
 
+
 source:
-  url: https://pypi.org/packages/source/d/{{ name }}/{{ name }}-{{ version }}.tar.gz
+  url: https://pypi.org/packages/source/d/nxs-analysis-tools/nxs_analysis_tools-{{ version }}.tar.gz
   sha256: f9a4b89c9769e0d1c585426d1881e1bebc72af3b09bf3760d7e1ef8cba1253ac
 
 build:
