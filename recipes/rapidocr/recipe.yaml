@@ -33,8 +33,6 @@ requirements:
     - omegaconf
     - requests
     - colorlog
-    - if: linux
-      then: libgl
 
 tests:
   - python:
