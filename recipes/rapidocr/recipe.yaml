@@ -9,10 +9,12 @@ package:
 source:
   url: https://github.com/RapidAI/RapidOCR/archive/v${{ version }}.tar.gz
   sha256: 8b061f87053e37e1943c0f372fffa2a6a52f064018ee69cceaeb32e8143ff782
+  patches:
+    - fix_setup.patch
 
 build:
   noarch: python
-  script: build.sh
+  script: cd python && python -m pip install . -vv --no-deps --no-build-isolation
   number: 0
 
 requirements:

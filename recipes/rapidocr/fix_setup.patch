@@ -1,0 +1,45 @@
+diff --git a/python/setup.py b/python/setup.py
+--- a/python/setup.py
++++ b/python/setup.py
+@@ -1,7 +1,7 @@
+ # -*- encoding: utf-8 -*-
+ # @Author: SWHL
+ # @Contact: liekkaskono@163.com
+-import sys
++import os
+ from pathlib import Path
+ from typing import List, Union
+
+@@ -9,7 +9,6 @@
+ import setuptools
+-from get_pypi_latest_version import GetPyPiLatestVersion
+
+
+ def read_txt(txt_path: Union[Path, str]) -> List[str]:
+@@ -28,17 +27,7 @@
+
+ MODULE_NAME = "rapidocr"
+
+-obtainer = GetPyPiLatestVersion()
+-try:
+-    latest_version = obtainer(MODULE_NAME)
+-except Exception as e:
+-    latest_version = "0.0.0"
+-VERSION_NUM = obtainer.version_add_one(latest_version, add_patch=True)
+-
+-if len(sys.argv) > 2:
+-    match_str = " ".join(sys.argv[2:])
+-    matched_versions = obtainer.extract_version(match_str)
+-    if matched_versions:
+-        VERSION_NUM = matched_versions
+-sys.argv = sys.argv[:2]
++VERSION_NUM = os.environ.get("PKG_VERSION", "0.0.0")
+
+ project_urls = {
+@@ -59,8 +48,7 @@
+     include_package_data=True,
+     install_requires=read_txt("requirements.txt"),
+-    package_dir={"": MODULE_NAME},
+-    packages=setuptools.find_namespace_packages(where=MODULE_NAME),
++    packages=setuptools.find_packages(exclude=["tests", "tests.*"]),
+     package_data={"": ["*.onnx", "*.yaml", "*.txt"]},
