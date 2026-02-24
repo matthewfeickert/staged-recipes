@@ -31,7 +31,7 @@ requirements:
     - matplotlib
     - h5py
     - pandas
-    - nexusformat
+    - nexusformat <2.0.0
     - lmfit
     - astropy
     - pyfftw
