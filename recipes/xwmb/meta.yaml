@@ -1,0 +1,42 @@
+{% set name = "xwmb" %}
+{% set version = "0.5.5" %}
+{% set python_min = "3.11" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  url: https://pypi.org/packages/source/x/xwmb/xwmb-{{ version }}.tar.gz
+  sha256: 14a2b1cf88b857272e4d0af9793bc17e75a4b02247a765230cfd382181773b61
+
+build:
+  noarch: python
+  number: 0
+  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+
+requirements:
+  host:
+    - python {{ python_min }}
+    - pip
+    - hatchling
+  run:
+    - python >={{ python_min }}
+    - regionate >=0.5.0
+    - xwmt >=0.1.0
+
+test:
+  requires:
+    - python {{ python_min }}
+  imports:
+    - xwmb
+
+about:
+  home: https://github.com/hdrake/xwmb
+  summary: Water Mass Transformation Routines for xarray
+  license: MIT
+  license_file: LICENSE
+
+extra:
+  recipe-maintainers:
+    - hdrake
