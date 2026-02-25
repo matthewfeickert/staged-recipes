@@ -30,7 +30,7 @@ requirements:
 
 test:
   imports:
-    - orca_pi
+    - opi
   commands:
     - pip check
   requires:
