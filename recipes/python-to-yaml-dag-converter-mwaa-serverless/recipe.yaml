@@ -1,0 +1,63 @@
+schema_version: 1
+
+context:
+  version: 0.1.3
+
+package:
+  name: python-to-yaml-dag-converter-mwaa-serverless
+  version: ${{ version }}
+
+source:
+  url: https://pypi.org/packages/source/p/python-to-yaml-dag-converter-mwaa-serverless/python_to_yaml_dag_converter_mwaa_serverless-${{ version }}.tar.gz
+  sha256: b2d341e5489eb1d35847130c08f532a718492ecb42d6b0b8764f7b244c682956 
+
+build:
+  number: 0
+  noarch: python
+  script: ${{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+  python:
+    entry_points:
+      - dag-converter = dag_converter.cli:app
+
+requirements:
+  host:
+    - python ${{ python_min }}.*
+    - hatchling
+    - pip
+  run:
+    - python >=${{ python_min }}
+    - apache-airflow ==3.0.6
+    - apache-airflow-providers-amazon ==9.10.0
+    - apache-airflow-providers-cncf-kubernetes ==10.6.1
+    - boto3 >=1.37.3
+    - dag-factory ==1.0.1
+    - rich >=13.7.1,<15.0.0
+    - fastapi ==0.121.2
+    - cadwyn ==5.6.1
+
+tests:
+  - python:
+      python_version: ${{ python_min }}.*
+      imports:
+        - dag_converter 
+      pip_check: true
+  - requirements:
+      run:
+        - pip
+        - python ${{ python_min }}.*
+    script:
+      - dag-converter --help
+
+about:
+  summary: CLI tool that converts Python airflow Dags to YAML Dags for use with dagfactory
+  license: Apache-2.0
+  license_file:
+    - LICENSE
+    - NOTICE
+  homepage: https://pypi.org/project/python-to-yaml-dag-converter-mwaa-serverless/
+  repository: https://github.com/awslabs/python-to-yaml-dag-converter-mwaa-serverless
+  documentation: https://github.com/awslabs/python-to-yaml-dag-converter-mwaa-serverless/blob/main/README.md
+
+extra:
+  recipe-maintainers:
+    - timktu
