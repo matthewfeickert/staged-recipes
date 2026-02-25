@@ -1,0 +1,47 @@
+context:
+  version: 1.1.8
+
+package:
+  name: kgcpy
+  version: ${{ version }}
+
+source:
+- url: https://pypi.org/packages/source/k/kgcpy/kgcpy-${{ version }}.tar.gz
+  sha256: 928867b11c81a08cb9a6724558583b33e7b7e0acd941f3576a8a47b71bd9e4dd
+
+build:
+  script: ${{ PYTHON }} -m pip install .
+  noarch: python
+  number: 0
+
+requirements:
+  host:
+  - python ${{ python_min }}.*
+  - setuptools >=61.0
+  - pip
+  run:
+  - python >=${{ python_min }}
+  - pillow
+  - pandas
+
+tests:
+- python:
+    imports:
+    - kgcpy
+    pip_check: true
+    python_version:
+      - "${{ python_min }}.*"
+      - "*"
+
+about:
+  summary: Aids in identifying the Koeppen-Geiger (KG) climatic zone for a given latitude and longitude of any location.
+  description: kgcpy Aids in identifying the Köppen-Geiger (KG) climatic zone for a given lat and lon of any location. The resolution of KG map is at 100 sec arc or approximately 3.087 km at the equator.
+  repository: https://github.com/cwru-sdle/kgcpy
+  documentation: https://kgcpy.readthedocs.io
+  license: BSD-3-Clause
+  license_file: LICENSE.txt
+  homepage: https://github.com/cwru-sdle/kgcpy
+
+extra:
+  recipe-maintainers:
+    - julian-belina
