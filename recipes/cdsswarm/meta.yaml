@@ -9,7 +9,7 @@ source:
   sha256: 10ee4f44c71240021f036f77b6e2fab76ae75fecbd11e1170d1a8c40d0f15516
 
 build:
-  skip: true  # [py<310]
+  noarch: python
   entry_points:
     - cdsswarm = cdsswarm.cli:main
   script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
@@ -27,7 +27,7 @@ requirements:
     - requests
     - tqdm
     - textual >=0.87
-    - tomli >=1.1.0  # [py<311]
+    - tomli >=1.1.0
 
 test:
   imports:
