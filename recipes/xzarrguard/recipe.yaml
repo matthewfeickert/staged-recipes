@@ -36,10 +36,9 @@ tests:
       pip_check: true
       python_version: ${{ python_min }}.*
   - script:
-      # Use module invocation to avoid Windows entrypoint wrapper issues in CI.
-      - python -m xzarrguard.cli --help
+      - xzarrguard --help
   - script:
-      - python -m pytest -q -o addopts='' tests
+      - pytest -q -o addopts='' tests
     requirements:
       run:
         - pytest
