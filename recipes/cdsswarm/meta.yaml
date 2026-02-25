@@ -1,0 +1,50 @@
+{% set version = "0.1.7" %}
+
+package:
+  name: cdsswarm
+  version: {{ version }}
+
+source:
+  url: https://pypi.org/packages/source/c/cdsswarm/cdsswarm-{{ version }}.tar.gz
+  sha256: 10ee4f44c71240021f036f77b6e2fab76ae75fecbd11e1170d1a8c40d0f15516
+
+build:
+  skip: true  # [py<310]
+  entry_points:
+    - cdsswarm = cdsswarm.cli:main
+  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+  number: 0
+
+requirements:
+  host:
+    - python >=3.10
+    - setuptools >=64
+    - setuptools-scm
+    - pip
+  run:
+    - python >=3.10
+    - cdsapi >=0.7
+    - requests
+    - tqdm
+    - textual >=0.87
+    - tomli >=1.1.0  # [py<311]
+
+test:
+  imports:
+    - cdsswarm
+  commands:
+    - pip check
+    - cdsswarm --help
+  requires:
+    - pip
+    - python
+
+about:
+  home: https://github.com/bgiebl/cdsswarm
+  summary: Concurrent CDS API downloader with TUI and script mode
+  license: MIT
+  license_file: LICENSE
+
+extra:
+  recipe-maintainers:
+    - bgiebl
