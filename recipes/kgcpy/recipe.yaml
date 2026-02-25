@@ -29,6 +29,9 @@ tests:
     imports:
     - kgcpy
     pip_check: true
+    python_version:
+      - "${{ python_min }}.*"
+      - "*"
 
 about:
   summary: Aids in identifying the Koeppen-Geiger (KG) climatic zone for a given latitude and longitude of any location.
