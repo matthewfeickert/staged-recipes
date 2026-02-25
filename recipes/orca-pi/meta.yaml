@@ -26,7 +26,7 @@ requirements:
     - platformdirs >=4.3.8,<5
     - pydantic >=2.11.5,<3
     - rdkit >=2025.3.2,<2026
-    - semantic-version >=2.10.0,<3
+    - semantic_version >=2.10.0,<3
 
 test:
   imports:
@@ -48,3 +48,4 @@ about:
 extra:
   recipe-maintainers:
     - awvwgk
+    - haneug
