@@ -1,8 +1,9 @@
-{% set name = "xarray-prism" %}
-{% set version = "2602.1.0" %}
+context:
+  name: xarray-prism
+  version: "2602.1.0"
 
 package:
-  name: ${{ name | lower }}
+  name: ${{ name }}
   version: ${{ version }}
 
 source:
