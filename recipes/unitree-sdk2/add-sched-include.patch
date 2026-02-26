@@ -1,9 +1,0 @@
---- a/include/unitree/common/os.hpp
-+++ b/include/unitree/common/os.hpp
-@@ -1,6 +1,7 @@
- #ifndef __UT_OS_HPP__
- #define __UT_OS_HPP__
-
-+#include <linux/sched.h>
- #include <unitree/common/decl.hpp>
- #include <unitree/common/lock/lock.hpp>
