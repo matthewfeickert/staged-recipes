@@ -1,5 +1,4 @@
 {% set version = "0.2.7" %}
-{% set python_min = "3.6" %}
 
 package:
   name: julius
@@ -16,7 +15,7 @@ build:
 
 requirements:
   host:
-    - python
+    - python {{ python_min }}
     - pip
     - setuptools
   run:
@@ -30,7 +29,7 @@ test:
     - pip check
   requires:
     - pip
-    - python
+    - python {{ python_min }}
 
 about:
   home: https://github.com/adefossez/julius
