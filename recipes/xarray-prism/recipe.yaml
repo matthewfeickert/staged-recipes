@@ -8,7 +8,7 @@ package:
 
 source:
   url: https://pypi.org/packages/source/${{ name[0] }}/${{ name }}/xarray_prism-${{ version }}.tar.gz
-  sha256: abe771cce4312ead0795862063b596737f002ddf293973809396a8e669d22bd9
+  sha256: 2b866bf794d1c3cd3362a42439bcb90863b84f0a1e7bfc66687be66788b50e57
 
 build:
   number: 0
