@@ -1,0 +1,49 @@
+schema_version: 1
+
+context:
+  version: 1.1.0
+
+package:
+  name: python-discovery
+  version: ${{ version }}
+
+source:
+  url: https://pypi.org/packages/source/p/python-discovery/python_discovery-${{ version }}.tar.gz
+  sha256: 447941ba1aed8cc2ab7ee3cb91be5fc137c5bdbb05b7e6ea62fbdcb66e50b268
+
+build:
+  number: 0
+  noarch: python
+  script: ${{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+
+requirements:
+  host:
+    - python ${{ python_min }}.*
+    - hatch-vcs >=0.5
+    - hatchling >=1.28
+    - pip
+  run:
+    - python >=${{ python_min }}
+    - filelock >=3.15.4
+    - platformdirs <5,>=4.3.6
+
+tests:
+  - python:
+      imports:
+        - python_discovery
+      pip_check: true
+      python_version:
+        - ${{ python_min }}.*
+        - "*"
+
+about:
+  summary: Python interpreter discovery
+  license: MIT
+  license_file: LICENSE
+  homepage: https://github.com/tox-dev/python-discovery
+  repository: https://github.com/tox-dev/python-discovery
+  documentation: https://python-discovery.readthedocs.io
+
+extra:
+  recipe-maintainers:
+    - ocefpaf
