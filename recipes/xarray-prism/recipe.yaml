@@ -38,7 +38,9 @@ requirements:
 
 tests:
   - python:
-      python_version: ${{ python_min }}.*
+      python_version:
+        - ${{ python_min }}.*
+        - "*"
       imports:
         - xarray_prism
       pip_check: true
