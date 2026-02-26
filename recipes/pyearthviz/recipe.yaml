@@ -1,8 +1,6 @@
-# Define variables in this section that you can use in other parts.
 context:
   name: pyearthviz
   version: "0.1.0"
-  python_min: "3.9"
 
 package:
   name: ${{ name|lower }}
@@ -19,7 +17,7 @@ build:
 
 requirements:
   host:
-    - python ${{ python_min }}.*
+    - python
     - pip
     - setuptools >=61.0
     - wheel
