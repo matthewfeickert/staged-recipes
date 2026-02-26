@@ -27,7 +27,7 @@ requirements:
     - ipython
     - numpy
     - scipy
-    - matplotlib
+    - matplotlib-base
     - h5py
     - pandas
     - nexusformat <2.0.0
