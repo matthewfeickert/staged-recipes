@@ -9,8 +9,8 @@ package:
   version: ${{ version }}
 
 source:
-  git: https://github.com/changliao1025/pyearthviz
-  rev: main
+  url: https://github.com/changliao1025/pyearthviz/archive/refs/tags/v${{ version }}.tar.gz
+  sha256: 3e021078e9d3f279426267f4b67313b36dcd81c1a67b8f6aac5cb1982336a7e8
 
 build:
   noarch: python
