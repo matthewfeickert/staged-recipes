@@ -1,0 +1,62 @@
+context:
+  name: xarray-prism
+  version: "2602.1.0"
+
+package:
+  name: ${{ name }}
+  version: ${{ version }}
+
+source:
+  url: https://pypi.org/packages/source/${{ name[0] }}/${{ name }}/xarray_prism-${{ version }}.tar.gz
+  sha256: ef984c072041571e91c58e8746764adc2d4f221b98ad5aa3d174c0eea997e49b
+
+build:
+  number: 0
+  script: ${{ PYTHON }} -m pip install . -v --no-deps --no-build-isolation
+  noarch: python
+
+requirements:
+  host:
+    - python ${{ python_min }}.*
+    - setuptools >=61.0
+    - pip
+  run:
+    - python >=${{ python_min }}
+    - xarray
+    - fsspec
+    - h5netcdf
+    - scipy
+    - zarr
+    - cfgrib
+    - eccodes
+    - rioxarray
+    - rasterio
+    - netcdf4
+    - s3fs
+    - gcsfs
+    - adlfs
+
+tests:
+  - python:
+      python_version:
+        - ${{ python_min }}.*
+        - "*"
+      imports:
+        - xarray_prism
+      pip_check: true
+
+about:
+  summary: A multi-format and multi-storage xarray engine with automatic engine detection.
+  description: |
+    Xarray-prism is an xarray extension that provides a multi-format and multi-storage
+    engine for climate data. It automatically detects the appropriate engine for various
+    data formats and allows users to register new data formats and URI types.
+  license: BSD-3-Clause
+  license_file: LICENSE
+  homepage: https://github.com/freva-org/xarray-prism
+  repository: https://github.com/freva-org/xarray-prism
+
+extra:
+  recipe-maintainers:
+    - antarcticrainforest
+    - arcticrainforest
