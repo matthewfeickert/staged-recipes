@@ -1,14 +1,13 @@
 context:
-  name: feynhiggs
-  version: "2.16.1"
+  version: "2.19.0"
 
 recipe:
-  name: ${{ name|lower }}
+  name: feynhiggs
   version: ${{ version }}
 
 source:
   url: https://github.com/hep-packaging-coordination/feynhiggs-release-mirror/archive/refs/tags/${{ version }}.tar.gz
-  sha256: 47c749bcaa2400973dd492a62a8e72f6c2fc5acbc7499fe17c75de62382e6ec7
+  sha256: b0bb1beadb34ea58dbf4bcd12c4e399b1bd917d76abce00551034db39bc719bf
   patches:
     - henning-bahl-compliation-patches.patch
 
