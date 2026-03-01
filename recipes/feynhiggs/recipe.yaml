@@ -69,13 +69,12 @@ outputs:
             - PDG.h
             - SLHA.h
             - SLHADefs.h
-          lib:
-            - libFH.a
           bin:
             - FeynHiggs
             - fcc
             - table
           files:
+            - lib/libFH.a
             # tests
             - etc/conda/test-files/feynhiggs-static/0/example/*
 
