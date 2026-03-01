@@ -9,6 +9,8 @@ recipe:
 source:
   url: https://github.com/hep-packaging-coordination/feynhiggs-release-mirror/archive/refs/tags/${{ version }}.tar.gz
   sha256: 47c749bcaa2400973dd492a62a8e72f6c2fc5acbc7499fe17c75de62382e6ec7
+  patches:
+    - henning-bahl-compliation-patches.patch
 
 build:
   number: 0
