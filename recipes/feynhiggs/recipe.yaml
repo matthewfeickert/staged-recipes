@@ -16,7 +16,7 @@ build:
 
 outputs:
   - package:
-      name: ${{ name }}-static
+      name: feynhiggs-static
 
     build:
       skip:
