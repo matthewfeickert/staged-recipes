@@ -1,0 +1,95 @@
+schema_version: 1
+
+# GX: GPU-native gyrokinetic simulation code (CUDA/C++).
+#
+# Upstream has no tagged releases or version numbers. We pin to the latest
+# commit on the 'gx' branch as of 2025-03-04 and encode that date in the
+# version string so future updates can be ordered.
+
+context:
+  version: "0.0.0.20250304"
+  commit: "bc2fe5523c23e3d0198181a3e3b7c8a482e25ba5"
+
+package:
+  name: gx
+  version: ${{ version }}
+
+source:
+  git: https://bitbucket.org/gyrokinetics/gx.git
+  rev: ${{ commit }}
+
+build:
+  number: 0
+  skip:
+    - not linux
+    - match(cuda_compiler_version, "==None")
+  script:
+    file: build.sh
+
+requirements:
+  build:
+    - ${{ stdlib("c") }}
+    - ${{ compiler("cxx") }}
+    - ${{ compiler("cuda") }}
+    - if: linux and aarch64
+      then: arm-variant * ${{ arm_variant_type }}
+    - make
+  host:
+    - cuda-version ${{ cuda_compiler_version }}.*
+    - cuda-cudart-dev
+    - cuda-cudart-static
+    - cuda-nvtx-dev
+    - libcublas-dev
+    - libcufft-dev
+    - libcufft-static
+    - libcusolver-dev
+    - libcutensor-dev
+    - libnccl-dev
+    - gsl
+    # Repeat of requirements with no constraint and with build variant are to
+    # pick up global pinning (from no constraint)
+    - hdf5
+    - hdf5 [build=mpi_${{ mpi }}_*]
+    - libnetcdf
+    - libnetcdf [build=mpi_${{ mpi }}_*]
+    - netcdf-fortran [build=mpi_${{ mpi }}_*]
+    - mpi [build=${{ mpi }}]
+  run:
+    - ${{ pin_compatible("cuda-version", lower_bound="x", upper_bound="x") }}
+    - gsl
+    - hdf5 * [build=mpi_${{ mpi }}_*]
+    - libnetcdf * [build=mpi_${{ mpi }}_*]
+    - netcdf-fortran * [build=mpi_${{ mpi }}_*]
+    - mpi [build=${{ mpi }}]
+    - python
+    - numpy
+    - scipy
+    - matplotlib-base
+    - netcdf4
+    - if: match(python, "<3.11")
+      then: tomli
+
+tests:
+  - package_contents:
+      strict: true
+      bin:
+        - gx
+
+about:
+  homepage: https://bitbucket.org/gyrokinetics/gx/
+  summary: GPU-native gyrokinetic turbulence solver
+  description: |
+    GX is a code for solving the nonlinear gyrokinetic system for low-frequency
+    turbulence in magnetized plasmas using Fourier-Hermite-Laguerre spectral
+    methods. A unique feature of GX is the use of a Hermite-Laguerre velocity
+    discretization, which allows GX to smoothly interpolate between coarse
+    gyrofluid-like resolutions and finer conventional gyrokinetic resolutions.
+    GX is GPU-native and is designed and optimized for NVIDIA GPUs in CUDA/C++.
+  license: MIT
+  license_file: docs/License.rst
+  documentation: https://gx.readthedocs.io/
+  repository: https://bitbucket.org/gyrokinetics/gx/
+
+extra:
+  recipe-maintainers:
+    - matthewfeickert
