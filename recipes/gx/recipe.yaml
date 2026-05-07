@@ -114,6 +114,9 @@ outputs:
           - ldd ${PREFIX}/bin/gx
           # '!' negates/inverts the exit code
           - "! ldd ${PREFIX}/bin/gx | grep -q 'not found'"
+          # NOTE: Can test on a local CUDA-enabled machine with
+          # git clone https://bitbucket.org/gyrokinetics/gx.git
+          # gx ./gx/benchmarks/linear/ITG_cyclone/itg_miller_adiabatic_electrons.in
         requirements:
           run:
             - cuda-driver-dev
