@@ -8,7 +8,9 @@ mpi:
 # pthread_setattr_default_np@GLIBC_2.18, getrandom@GLIBC_2.25). Bump the
 # sysroot to 2.28 so linking against those CUDA libs resolves.
 c_stdlib_version:
-  - "2.28"
+  # if statement is to avoid linter warning
+  - if: linux
+    then: "2.28"
 
 # conda-forge global pinning still has openmpi: 4, but the hdf5 1.14.6
 # mpi_openmpi_* builds were only produced against openmpi 5.x, so the
