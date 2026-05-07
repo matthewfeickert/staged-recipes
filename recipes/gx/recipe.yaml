@@ -112,19 +112,18 @@ outputs:
   - package:
       name: gx
     build:
-      # Should this be made noarch: python?
-      noarch: generic
+      noarch: python
       # Metapackage: no build payload, do nothing.
       script: "true"
     requirements:
       host:
-        - python
+        - python ${{ python_min }}.*
       run:
+        - python >=${{ python_min }}
         # exact=true ties this metapackage to the matching MPI/CUDA build of
         # gx-core, so installing gx pulls in the binary that was built in
         # the same variant.
         - ${{ pin_subpackage("gx-core", exact=true) }}
-        - python
         - numpy
         - scipy
         - matplotlib-base
@@ -133,6 +132,10 @@ outputs:
           then: tomli
 
     tests:
+      - python:
+          python_version:
+            - ${{ python_min }}.*
+            - "*"
       - script:
           - which gx
           - python --version
