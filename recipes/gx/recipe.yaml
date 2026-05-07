@@ -24,13 +24,6 @@ build:
   skip:
     - not linux
     - match(cuda_compiler_version, "==None")
-    # TODO/DEBUG: CHECK THIS
-    # GX uses cufftXtSetCallback (src/grad_parallel.cu); cuFFT callbacks are
-    # only exposed by libcufft_static.a, which on conda-forge CUDA 13 has
-    # unresolved references to culibosGetProcAddress/culibosLoadLibrary
-    # because libculibos.a is no longer shipped in any CUDA 13 package.
-    # Re-enable once conda-forge resolves the missing libculibos.
-    - match(cuda_compiler_version, ">=13")
 
 outputs:
   - package:
@@ -52,7 +45,10 @@ outputs:
       host:
         - cuda-version ${{ cuda_compiler_version }}.*
         - cuda-cudart-dev
-        - cuda-cudart-static
+        # Need libculibos.a
+        - if: match(cuda_compiler_version, ">=13")
+          then: cuda-culibos-static
+          else: cuda-cudart-static
         - cuda-nvtx-dev
         - libcublas-dev
         - libcufft-dev

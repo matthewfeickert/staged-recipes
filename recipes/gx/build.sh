@@ -25,14 +25,6 @@ if [ "${CUDA_MAJOR}" -lt 13 ]; then
   GENCODE_FLAGS="-gencode=arch=compute_70,code=sm_70 ${GENCODE_FLAGS}"
 fi
 
-# libculibos.a was a small NVIDIA-internal helper static library; CUDA 13
-# inlined its contents and stopped shipping the file in cuda-cudart-static.
-if [ "${CUDA_MAJOR}" -ge 13 ]; then
-  CULIBOS_FLAG=""
-else
-  CULIBOS_FLAG="-lculibos"
-fi
-
 # The upstream Makefile bakes `${PWD}` (the build directory) into the binary
 # as the GX_PATH compile-time define; gx uses GX_PATH at runtime to invoke
 # helper scripts under geometry_modules/. Replace that with a Make variable
@@ -51,8 +43,9 @@ MPI_INC = -I \${PREFIX}/include
 MPI_LIB = -L \${PREFIX}/lib -lmpi
 
 # CUDA libraries: cudart, NCCL, cuFFT (static), cuBLAS, cuSOLVER, cuTENSOR,
-# cuLIBOS (static, shipped in cuda-cudart-static). -lgomp pulls in the GNU
-# OpenMP runtime that some CUDA static libs reference.
+# cuLIBOS (static; shipped in cuda-cudart-static for CUDA 12 and in the
+# separate cuda-culibos-static package for CUDA 13+). -lgomp pulls in the
+# GNU OpenMP runtime that some CUDA static libs reference.
 #
 # conda-forge's CUDA static libraries (libcufft_static.a, etc.) are installed
 # only under \${PREFIX}/targets/x86_64-linux/lib, not the top-level
@@ -62,7 +55,7 @@ MPI_LIB = -L \${PREFIX}/lib -lmpi
 # NVTX symbols and CUDA 12 ships only the header-only NVTX3 API on
 # conda-forge (no libnvToolsExt.so), so the flag is dropped.
 CUDA_INC = -I \${PREFIX}/include
-CUDA_LIB = -L \${PREFIX}/lib -L \${PREFIX}/targets/x86_64-linux/lib -lcufft_static -lcublas -lcusolver -lgomp -lcutensor -lnccl -lcudart ${CULIBOS_FLAG}
+CUDA_LIB = -L \${PREFIX}/lib -L \${PREFIX}/targets/x86_64-linux/lib -lcufft_static -lcublas -lcusolver -lgomp -lcutensor -lnccl -lcudart -lculibos
 
 GSL_INC = -I \${PREFIX}/include
 GSL_LIB = -L \${PREFIX}/lib -lgsl -lgslcblas
