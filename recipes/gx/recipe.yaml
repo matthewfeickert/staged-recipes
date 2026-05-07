@@ -57,12 +57,22 @@ outputs:
         - cutensor
         - nccl
         - gsl
-        - hdf5 [build=mpi_${{ mpi }}_*]
-        # Repeat of requirements with no constraint and with build variant are to
-        # pick up global pinning (from no constraint)
-        - libnetcdf
-        - libnetcdf [build=mpi_${{ mpi }}_*]
-        - netcdf-fortran [build=mpi_${{ mpi }}_*]
+        - if: mpi == "openmpi"
+          then:
+            # DON'T repeat requirements with no constraint along with the mpi
+            # build variant as the global pinning will pick up openmpi 4 but
+            # the build variants need openmpi 5
+            - hdf5 [build=mpi_${{ mpi }}_*]
+            - libnetcdf [build=mpi_${{ mpi }}_*]
+            - netcdf-fortran [build=mpi_${{ mpi }}_*]
+          else:
+            # Repeat of requirements with no constraint and with mpi build
+            # variant are to pick up global pinning (from no constraint)
+            - hdf5
+            - hdf5 [build=mpi_${{ mpi }}_*]
+            - libnetcdf
+            - libnetcdf [build=mpi_${{ mpi }}_*]
+            - netcdf-fortran [build=mpi_${{ mpi }}_*]
         - ${{ mpi }}
       run:
         - ${{ pin_compatible("cuda-version", lower_bound="x", upper_bound="x") }}
