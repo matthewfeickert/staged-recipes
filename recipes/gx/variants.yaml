@@ -9,3 +9,10 @@ mpi:
 # sysroot to 2.28 so linking against those CUDA libs resolves.
 c_stdlib_version:
   - "2.28"
+
+# conda-forge global pinning still has openmpi: 4, but the hdf5 1.14.6
+# mpi_openmpi_* builds were only produced against openmpi 5.x, so the
+# default pin produces an unsolvable host environment. Pin to 5 here until
+# the global pinning catches up.
+openmpi:
+  - "5"

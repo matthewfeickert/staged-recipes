@@ -85,7 +85,18 @@ tests:
   # cannot shadow the real driver at runtime on a GPU host; for the
   # throwaway test env we symlink it into $PREFIX/lib/ as libcuda.so.1.
   - script:
+      # cuda-driver-dev ships its libcuda.so stub at $PREFIX/lib/stubs/ so it
+      # cannot shadow the real driver at runtime on a GPU host. Symlink it
+      # into $PREFIX/lib/libcuda.so.1 in this throwaway test env and assert
+      # the resolved path exists. test -f follows the symlink chain, so a
+      # dangling link (e.g. if the cuda-driver-dev stub layout changed)
+      # fails this step.
       - ln -s ${PREFIX}/lib/stubs/libcuda.so ${PREFIX}/lib/libcuda.so.1
+      - test -f ${PREFIX}/lib/libcuda.so.1
+      # ldd only walks DT_NEEDED entries, so it does not reflect cudart's
+      # runtime dlopen("libcuda.so.1") — that is what the symlink+test -f
+      # above guards. The ldd assertion still catches RPATH bugs, missing
+      # run-deps, and broken MPI-variant linkage.
       - ldd ${PREFIX}/bin/gx
       # '!' negates/inverts the exit code
       - "! ldd ${PREFIX}/bin/gx | grep -q 'not found'"
