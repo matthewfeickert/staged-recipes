@@ -8,8 +8,8 @@ context:
   version: "0.0.0.20250304"
   commit: "bc2fe5523c23e3d0198181a3e3b7c8a482e25ba5"
 
-package:
-  name: gx
+recipe:
+  name: gx-suite
   version: ${{ version }}
 
 source:
@@ -18,82 +18,103 @@ source:
 
 build:
   number: 0
-  # Example: cuda129_mpi_mpich_h<hash>_<build_number>
-  string: cuda${{ cuda_compiler_version | version_to_buildstring }}_mpi_${{ mpi }}_h${{ hash }}_${{ build_number }}
+  variant:
+    # Default to MPICH over other variants
+    down_prioritize_variant: ${{ 0 if mpi == "mpich" else 1 }}
   skip:
     - not linux
     - match(cuda_compiler_version, "==None")
-  script:
-    file: build.sh
 
-requirements:
-  build:
-    - ${{ stdlib("c") }}
-    - ${{ compiler("cxx") }}
-    - ${{ compiler("cuda") }}
-    - if: linux and aarch64
-      then: arm-variant * ${{ arm_variant_type }}
-    - make
-  host:
-    - cuda-version ${{ cuda_compiler_version }}.*
-    - cuda-cudart-dev
-    - cuda-cudart-static
-    - cuda-nvtx-dev
-    - libcublas-dev
-    - libcufft-dev
-    - libcufft-static
-    - libcusolver-dev
-    - cutensor
-    - nccl
-    - gsl
-    # Repeat of requirements with no constraint and with build variant are to
-    # pick up global pinning (from no constraint)
-    - hdf5
-    - hdf5 [build=mpi_${{ mpi }}_*]
-    - libnetcdf
-    - libnetcdf [build=mpi_${{ mpi }}_*]
-    - netcdf-fortran [build=mpi_${{ mpi }}_*]
-    - ${{ mpi }}
-  run:
-    - ${{ pin_compatible("cuda-version", lower_bound="x", upper_bound="x") }}
-    - gsl
-    - hdf5 * [build=mpi_${{ mpi }}_*]
-    - libnetcdf * [build=mpi_${{ mpi }}_*]
-    - netcdf-fortran * [build=mpi_${{ mpi }}_*]
-    - ${{ mpi }}
+outputs:
+  - package:
+      name: gx
+    build:
+      # Example: cuda129_mpi_mpich_h<hash>_<build_number>
+      string: cuda${{ cuda_compiler_version | version_to_buildstring }}_mpi_${{ mpi }}_h${{ hash }}_${{ build_number }}
+      script: build.sh
+    requirements:
+      run_exports:
+        - ${{ pin_subpackage("gx", upper_bound="x.x") }}
+      build:
+        - ${{ stdlib("c") }}
+        - ${{ compiler("cxx") }}
+        - ${{ compiler("cuda") }}
+        - if: linux and aarch64
+          then: arm-variant * ${{ arm_variant_type }}
+        - make
+      host:
+        - cuda-version ${{ cuda_compiler_version }}.*
+        - cuda-cudart-dev
+        - cuda-cudart-static
+        - cuda-nvtx-dev
+        - libcublas-dev
+        - libcufft-dev
+        - libcufft-static
+        - libcusolver-dev
+        - cutensor
+        - nccl
+        - gsl
+        # Repeat of requirements with no constraint and with build variant are to
+        # pick up global pinning (from no constraint)
+        - hdf5
+        - hdf5 [build=mpi_${{ mpi }}_*]
+        - libnetcdf
+        - libnetcdf [build=mpi_${{ mpi }}_*]
+        - netcdf-fortran [build=mpi_${{ mpi }}_*]
+        - ${{ mpi }}
+      run:
+        - ${{ pin_compatible("cuda-version", lower_bound="x", upper_bound="x") }}
+        - gsl
+        - hdf5 * [build=mpi_${{ mpi }}_*]
+        - libnetcdf * [build=mpi_${{ mpi }}_*]
+        - netcdf-fortran * [build=mpi_${{ mpi }}_*]
+        - ${{ mpi }}
+    tests:
+      - package_contents:
+          strict: true
+          bin:
+            - gx
+      # Linkage test: verify every NEEDED library resolves on a GPU-less host.
+      # gx itself cannot be executed without a real CUDA driver (main.cu calls
+      # cudaGetDeviceCount before argv parsing, so even the wrong-args path
+      # touches the driver), but ldd resolution against the cuda-driver-dev
+      # stub still catches RPATH bugs, missing run-deps, and broken MPI variant
+      # linkage. cuda-driver-dev places the stub in $PREFIX/lib/stubs/ so it
+      # cannot shadow the real driver at runtime on a GPU host; for the
+      # throwaway test env we symlink it into $PREFIX/lib/ as libcuda.so.1.
+      - script:
+          # cuda-driver-dev ships its libcuda.so stub at $PREFIX/lib/stubs/ so it
+          # cannot shadow the real driver at runtime on a GPU host. Symlink it
+          # into $PREFIX/lib/libcuda.so.1 in this throwaway test env and assert
+          # the resolved path exists. test -f follows the symlink chain, so a
+          # dangling link (e.g. if the cuda-driver-dev stub layout changed)
+          # fails this step.
+          - ln -s ${PREFIX}/lib/stubs/libcuda.so ${PREFIX}/lib/libcuda.so.1
+          - test -f ${PREFIX}/lib/libcuda.so.1
+          # ldd only walks DT_NEEDED entries, so it does not reflect cudart's
+          # runtime dlopen("libcuda.so.1") — that is what the symlink+test -f
+          # above guards. The ldd assertion still catches RPATH bugs, missing
+          # run-deps, and broken MPI-variant linkage.
+          - ldd ${PREFIX}/bin/gx
+          # '!' negates/inverts the exit code
+          - "! ldd ${PREFIX}/bin/gx | grep -q 'not found'"
+        requirements:
+          run:
+            - cuda-driver-dev
 
-tests:
-  - package_contents:
-      strict: true
-      bin:
-        - gx
-  # Linkage test: verify every NEEDED library resolves on a GPU-less host.
-  # gx itself cannot be executed without a real CUDA driver (main.cu calls
-  # cudaGetDeviceCount before argv parsing, so even the wrong-args path
-  # touches the driver), but ldd resolution against the cuda-driver-dev
-  # stub still catches RPATH bugs, missing run-deps, and broken MPI variant
-  # linkage. cuda-driver-dev places the stub in $PREFIX/lib/stubs/ so it
-  # cannot shadow the real driver at runtime on a GPU host; for the
-  # throwaway test env we symlink it into $PREFIX/lib/ as libcuda.so.1.
-  - script:
-      # cuda-driver-dev ships its libcuda.so stub at $PREFIX/lib/stubs/ so it
-      # cannot shadow the real driver at runtime on a GPU host. Symlink it
-      # into $PREFIX/lib/libcuda.so.1 in this throwaway test env and assert
-      # the resolved path exists. test -f follows the symlink chain, so a
-      # dangling link (e.g. if the cuda-driver-dev stub layout changed)
-      # fails this step.
-      - ln -s ${PREFIX}/lib/stubs/libcuda.so ${PREFIX}/lib/libcuda.so.1
-      - test -f ${PREFIX}/lib/libcuda.so.1
-      # ldd only walks DT_NEEDED entries, so it does not reflect cudart's
-      # runtime dlopen("libcuda.so.1") — that is what the symlink+test -f
-      # above guards. The ldd assertion still catches RPATH bugs, missing
-      # run-deps, and broken MPI-variant linkage.
-      - ldd ${PREFIX}/bin/gx
-      # '!' negates/inverts the exit code
-      - "! ldd ${PREFIX}/bin/gx | grep -q 'not found'"
+  - package:
+      name: gx-${{ mpi }}
+    build:
+      noarch: generic
+      # Avoid inheriting built script and do nothing instead
+      script: "true"
     requirements:
       run:
-        - cuda-driver-dev
+        # Pin to the exact build variant, which is the mpi variant that built
+        - ${{ pin_subpackage("gx", exact=true) }}
+    tests:
+      - script:
+          - which gx
 
 about:
   homepage: https://bitbucket.org/gyrokinetics/gx/
@@ -111,5 +132,6 @@ about:
   repository: https://bitbucket.org/gyrokinetics/gx/
 
 extra:
+  feedstock-name: gx
   recipe-maintainers:
     - matthewfeickert
