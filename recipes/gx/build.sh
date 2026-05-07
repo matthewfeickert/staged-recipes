@@ -7,16 +7,31 @@ set -euxo pipefail
 # conda-forge build environment, then invoke `make`.
 
 # Multi-architecture CUDA build: target the major architectures supported by
-# CUDA 12. `-arch=all-major` would also work on CUDA >= 11.5, but listing
-# arches explicitly keeps the targets visible and reproducible.
+# the active toolchain. `-arch=all-major` would also work on CUDA >= 11.5,
+# but listing arches explicitly keeps the targets visible and reproducible.
+#
+# CUDA 13 dropped sm_50 through sm_70 (Maxwell/Pascal/Volta), so compute_70
+# is rejected by nvcc 13+. Detect the toolchain major version and emit the
+# appropriate gencode list. Volta (sm_70 = V100) is kept on CUDA 12 only.
+CUDA_MAJOR=$(nvcc --version | sed -n 's/.*release \([0-9]\+\).*/\1/p')
 GENCODE_FLAGS="\
-  -gencode=arch=compute_70,code=sm_70 \
   -gencode=arch=compute_75,code=sm_75 \
   -gencode=arch=compute_80,code=sm_80 \
   -gencode=arch=compute_86,code=sm_86 \
   -gencode=arch=compute_89,code=sm_89 \
   -gencode=arch=compute_90,code=sm_90 \
   -gencode=arch=compute_90,code=compute_90"
+if [ "${CUDA_MAJOR}" -lt 13 ]; then
+  GENCODE_FLAGS="-gencode=arch=compute_70,code=sm_70 ${GENCODE_FLAGS}"
+fi
+
+# libculibos.a was a small NVIDIA-internal helper static library; CUDA 13
+# inlined its contents and stopped shipping the file in cuda-cudart-static.
+if [ "${CUDA_MAJOR}" -ge 13 ]; then
+  CULIBOS_FLAG=""
+else
+  CULIBOS_FLAG="-lculibos"
+fi
 
 cat > Makefiles/Makefile.condaforge <<EOF
 # conda-forge configuration for GX
@@ -40,7 +55,7 @@ MPI_LIB = -L \${PREFIX}/lib -lmpi
 # NVTX symbols and CUDA 12 ships only the header-only NVTX3 API on
 # conda-forge (no libnvToolsExt.so), so the flag is dropped.
 CUDA_INC = -I \${PREFIX}/include
-CUDA_LIB = -L \${PREFIX}/lib -L \${PREFIX}/targets/x86_64-linux/lib -lcufft_static -lcublas -lcusolver -lgomp -lcutensor -lnccl -lcudart -lculibos
+CUDA_LIB = -L \${PREFIX}/lib -L \${PREFIX}/targets/x86_64-linux/lib -lcufft_static -lcublas -lcusolver -lgomp -lcutensor -lnccl -lcudart ${CULIBOS_FLAG}
 
 GSL_INC = -I \${PREFIX}/include
 GSL_LIB = -L \${PREFIX}/lib -lgsl -lgslcblas
