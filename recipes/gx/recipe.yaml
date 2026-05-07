@@ -76,14 +76,19 @@ tests:
       strict: true
       bin:
         - gx
-  # Smoke test: gx (no args) prints a usage hint to stderr and exits 1 before
-  # ever touching the CUDA driver, so we can run it on a GPU-less CI host as
-  # long as the dynamic loader can resolve libcuda.so.1. cuda-driver-dev
-  # ships a stub at $PREFIX/lib/stubs/libcuda.so for that purpose.
+  # Linkage test: verify every NEEDED library resolves on a GPU-less host.
+  # gx itself cannot be executed without a real CUDA driver (main.cu calls
+  # cudaGetDeviceCount before argv parsing, so even the wrong-args path
+  # touches the driver), but ldd resolution against the cuda-driver-dev
+  # stub still catches RPATH bugs, missing run-deps, and broken MPI variant
+  # linkage. cuda-driver-dev places the stub in $PREFIX/lib/stubs/ so it
+  # cannot shadow the real driver at runtime on a GPU host; for the
+  # throwaway test env we symlink it into $PREFIX/lib/ as libcuda.so.1.
   - script:
-      - if [ ! -e ${PREFIX}/lib/stubs/libcuda.so.1 ]; then ln -s libcuda.so ${PREFIX}/lib/stubs/libcuda.so.1; fi
-      - export LD_LIBRARY_PATH=${PREFIX}/lib/stubs${LD_LIBRARY_PATH:+:}${LD_LIBRARY_PATH:-}
-      - gx 2>&1 | grep -q "correct usage"
+      - ln -s ${PREFIX}/lib/stubs/libcuda.so ${PREFIX}/lib/libcuda.so.1
+      - ldd ${PREFIX}/bin/gx
+      # '!' negates/inverts the exit code
+      - "! ldd ${PREFIX}/bin/gx | grep -q 'not found'"
     requirements:
       run:
         - cuda-driver-dev
