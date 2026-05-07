@@ -95,6 +95,7 @@ outputs:
             # The binary embeds GX_PATH=$PREFIX/share/gx and resolves helper
             # scripts beneath it
             - share/gx/geometry_modules/*
+            - share/gx/post_processing/*
 
       - script:
           # Linkage test: Verify every NEEDED library resolves on a host with no

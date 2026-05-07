@@ -97,3 +97,6 @@ mkdir -p "${PREFIX}/share/gx/geometry_modules"
 # Note 'cp -R' is the modern syntax
 # c.f. https://pubs.opengroup.org/onlinepubs/9799919799/utilities/cp.html
 cp -R geometry_modules/. "${PREFIX}/share/gx/geometry_modules/"
+
+mkdir -p "${PREFIX}/share/gx/post_processing"
+cp -R post_processing/. "${PREFIX}/share/gx/post_processing/"
