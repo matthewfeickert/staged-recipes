@@ -1,7 +1,5 @@
 schema_version: 1
 
-# GX: GPU-native gyrokinetic simulation code (CUDA/C++).
-#
 # Upstream has no tagged releases or version numbers. We pin to the latest
 # commit on the 'gx' branch as of 2025-03-04 and encode that date in the
 # version string so future updates can be ordered.
@@ -20,8 +18,8 @@ source:
 
 build:
   number: 0
-  # Example: cuda129_mpi_mpich_py314_h<hash>_<build_number>
-  string: cuda${{ cuda_compiler_version | version_to_buildstring }}_mpi_${{ mpi }}_py${{ python | version_to_buildstring }}_h${{ hash }}_${{ build_number }}
+  # Example: cuda129_mpi_mpich_h<hash>_<build_number>
+  string: cuda${{ cuda_compiler_version | version_to_buildstring }}_mpi_${{ mpi }}_h${{ hash }}_${{ build_number }}
   skip:
     - not linux
     - match(cuda_compiler_version, "==None")
@@ -63,13 +61,6 @@ requirements:
     - libnetcdf * [build=mpi_${{ mpi }}_*]
     - netcdf-fortran * [build=mpi_${{ mpi }}_*]
     - ${{ mpi }}
-    - python
-    - numpy
-    - scipy
-    - matplotlib-base
-    - netcdf4
-    - if: match(python, "<3.11")
-      then: tomli
 
 tests:
   - package_contents:
