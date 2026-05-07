@@ -57,10 +57,9 @@ outputs:
         - cutensor
         - nccl
         - gsl
+        - hdf5 [build=mpi_${{ mpi }}_*]
         # Repeat of requirements with no constraint and with build variant are to
         # pick up global pinning (from no constraint)
-        - hdf5
-        - hdf5 [build=mpi_${{ mpi }}_*]
         - libnetcdf
         - libnetcdf [build=mpi_${{ mpi }}_*]
         - netcdf-fortran [build=mpi_${{ mpi }}_*]
