@@ -39,10 +39,13 @@ GSL_LIB = -L \${PREFIX}/lib -lgsl -lgslcblas
 
 C_LIB = -lm -lpthread -ldl
 
-CXX = \${CXX}
+# Resolve \${CXX} and \${GENCODE_FLAGS} now (in the shell) so make sees a
+# literal compiler path. Leaving \${CXX} unexpanded would yield a recursive
+# self-reference (CXX = \${CXX}) when make evaluates the variable.
+CXX = ${CXX}
 NVCC = nvcc
 CFLAGS = -fPIC -O3
-NVCCFLAGS = --forward-unknown-to-host-compiler -ccbin=\${CXX} ${GENCODE_FLAGS} -use_fast_math -fPIC -rdc=true -O3
+NVCCFLAGS = --forward-unknown-to-host-compiler -ccbin=${CXX} ${GENCODE_FLAGS} -use_fast_math -fPIC -rdc=true -O3
 EOF
 
 export GK_SYSTEM=condaforge
