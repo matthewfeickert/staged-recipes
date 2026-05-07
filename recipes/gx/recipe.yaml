@@ -34,6 +34,12 @@ outputs:
       run_exports:
         - ${{ pin_subpackage("gx-core", upper_bound="x.x") }}
       build:
+        # ${{ stdlib("c") }} expands using the c_stdlib_version variant,
+        # which we override to 2.28 in variants.yaml. This pins the build
+        # sysroot exactly (not a range) and emits a matching
+        # `__glibc >=2.28` run-export so the published package is not
+        # over-constrained on glibc at install time. See variants.yaml for
+        # the rationale.
         - ${{ stdlib("c") }}
         - ${{ compiler("cxx") }}
         - ${{ compiler("cuda") }}

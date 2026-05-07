@@ -2,11 +2,24 @@ mpi:
   - mpich
   - openmpi
 
-# conda-forge default c_stdlib_version is 2.17, but the conda-forge CUDA 12.9
-# shared libraries (libcublas, libcutensor, libcusolver, libnccl) reference
-# glibc >= 2.28 symbols (powf@GLIBC_2.27, __cxa_thread_atexit_impl@GLIBC_2.18,
-# pthread_setattr_default_np@GLIBC_2.18, getrandom@GLIBC_2.25). Bump the
-# sysroot to 2.28 so linking against those CUDA libs resolves.
+# Override conda-forge's default c_stdlib_version (currently 2.17) up to
+# 2.28. The CUDA 12.9 shared libraries (libcublas, libcutensor, libcusolver,
+# libnccl) reference glibc symbols introduced in 2.18-2.28 (e.g.
+# powf@GLIBC_2.27, __cxa_thread_atexit_impl@GLIBC_2.18,
+# pthread_setattr_default_np@GLIBC_2.18, getrandom@GLIBC_2.25), so linking
+# against the default sysroot 2.17 fails at link time.
+#
+# This is the right place for the override (rather than a direct
+# sysroot_linux-64 dep) because the conda-forge stdlib jinja
+# (${{ stdlib("c") }}) reads c_stdlib_version to:
+#   1. install sysroot_linux-64 exactly at this version (not a range), so
+#      the binary doesn't accidentally tag symbols against a newer glibc
+#      that the build host happens to have available, and
+#   2. emit a matching `__glibc >=2.28,<3.0.a0` run-export so the published
+#      package is portable to any glibc >= 2.28 host.
+#
+# Drop this override once conda-forge's global pinning of c_stdlib_version
+# reaches >= 2.28.
 c_stdlib_version:
   # if statement is to avoid linter warning
   - if: linux
