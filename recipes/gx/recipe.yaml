@@ -27,14 +27,14 @@ build:
 
 outputs:
   - package:
-      name: gx
+      name: gx-core
     build:
       # Example: cuda129_mpi_mpich_h<hash>_<build_number>
       string: cuda${{ cuda_compiler_version | version_to_buildstring }}_mpi_${{ mpi }}_h${{ hash }}_${{ build_number }}
       script: build.sh
     requirements:
       run_exports:
-        - ${{ pin_subpackage("gx", upper_bound="x.x") }}
+        - ${{ pin_subpackage("gx-core", upper_bound="x.x") }}
       build:
         - ${{ stdlib("c") }}
         - ${{ compiler("cxx") }}
@@ -74,6 +74,10 @@ outputs:
           strict: true
           bin:
             - gx
+          files:
+            # The binary embeds GX_PATH=$PREFIX/share/gx and resolves helper
+            # scripts beneath it
+            - share/gx/geometry_modules/*
       # Linkage test: verify every NEEDED library resolves on a GPU-less host.
       # gx itself cannot be executed without a real CUDA driver (main.cu calls
       # cudaGetDeviceCount before argv parsing, so even the wrong-args path
@@ -102,6 +106,37 @@ outputs:
           run:
             - cuda-driver-dev
 
+  # Convenience metapackage: gx-core plus a Python interpreter so the
+  # geometry helper scripts under share/gx/geometry_modules/ (invoked by
+  # the gx binary at runtime, e.g. for Miller geometry) can be run.
+  # gx_geo.py imports numpy, scipy, toml, and (optionally) netCDF4; these
+  # are not pulled in here per the requested minimal layout, so users who
+  # need Miller geometry should install them alongside.
+  - package:
+      name: gx
+    build:
+      noarch: generic
+      # Metapackage: no build payload, do nothing.
+      script: "true"
+    requirements:
+      run:
+        # exact=true ties this metapackage to the matching MPI/CUDA build of
+        # gx-core, so installing gx pulls in the binary that was built in
+        # the same variant.
+        - ${{ pin_subpackage("gx-core", exact=true) }}
+        - python
+        - numpy
+        - scipy
+        - matplotlib-base
+        - netcdf4
+        # for Python < 3.11
+        - tomli
+
+    tests:
+      - script:
+          - which gx
+          - python --version
+
   - package:
       name: gx-${{ mpi }}
     build:
@@ -110,7 +145,8 @@ outputs:
       script: "true"
     requirements:
       run:
-        # Pin to the exact build variant, which is the mpi variant that built
+        # Pin to the exact build variant of the gx metapackage; that
+        # transitively pulls in gx-core (the binary) and python.
         - ${{ pin_subpackage("gx", exact=true) }}
     tests:
       - script:

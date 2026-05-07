@@ -33,6 +33,13 @@ else
   CULIBOS_FLAG="-lculibos"
 fi
 
+# The upstream Makefile bakes `${PWD}` (the build directory) into the binary
+# as the GX_PATH compile-time define; gx uses GX_PATH at runtime to invoke
+# helper scripts under geometry_modules/. Replace that with a Make variable
+# we can set to the install path so conda's prefix-replacement rewrites it
+# at install time.
+sed -i 's|-DGX_PATH=\\"${PWD}\\"|-DGX_PATH=\\"$(GX_DATA_DIR)\\"|g' Makefile
+
 cat > Makefiles/Makefile.condaforge <<EOF
 # conda-forge configuration for GX
 # CUDA toolkit, MPI, NetCDF, HDF5, and GSL are all provided by the host env.
@@ -65,6 +72,12 @@ C_LIB = -lm -lpthread -ldl
 # Resolve \${CXX} and \${GENCODE_FLAGS} now (in the shell) so make sees a
 # literal compiler path. Leaving \${CXX} unexpanded would yield a recursive
 # self-reference (CXX = \${CXX}) when make evaluates the variable.
+# GX_DATA_DIR is the runtime location of geometry_modules/ (and any other
+# helper trees); the binary embeds it via -DGX_PATH after the sed patch
+# above. Using \${PREFIX} here lets conda's prefix-replacement rewrite the
+# baked path to the user's actual install prefix at install time.
+GX_DATA_DIR = \${PREFIX}/share/gx
+
 CXX = ${CXX}
 NVCC = nvcc
 CFLAGS = -fPIC -O3
@@ -80,3 +93,9 @@ make --jobs="${CPU_COUNT}" gx
 
 mkdir -p "${PREFIX}/bin"
 install -m 0755 gx "${PREFIX}/bin/gx"
+
+# Install the geometry helper trees (referenced at runtime via GX_PATH).
+# The binary expects ${GX_PATH}/geometry_modules/miller/gx_geo.py and
+# similar paths to exist on the user's system after install.
+mkdir -p "${PREFIX}/share/gx/geometry_modules"
+cp -R geometry_modules/. "${PREFIX}/share/gx/geometry_modules/"
