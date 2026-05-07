@@ -1,13 +1,8 @@
 #!/usr/bin/env bash
 set -euxo pipefail
 
-# GX has no tagged releases; this recipe builds from a pinned commit on the
-# 'gx' branch. The upstream Makefile expects a system-specific
-# Makefiles/Makefile.<GK_SYSTEM>; we generate one tailored for the
-# conda-forge build environment, then invoke `make`.
-
 # Multi-architecture CUDA build: target the major architectures supported by
-# the active toolchain. `-arch=all-major` would also work on CUDA >= 11.5,
+# the active toolchain. '-arch=all-major' would also work on CUDA >= 11.5,
 # but listing arches explicitly keeps the targets visible and reproducible.
 #
 # CUDA 13 dropped sm_50 through sm_70 (Maxwell/Pascal/Volta), so compute_70
@@ -25,13 +20,15 @@ if [ "${CUDA_MAJOR}" -lt 13 ]; then
   GENCODE_FLAGS="-gencode=arch=compute_70,code=sm_70 ${GENCODE_FLAGS}"
 fi
 
-# The upstream Makefile bakes `${PWD}` (the build directory) into the binary
-# as the GX_PATH compile-time define; gx uses GX_PATH at runtime to invoke
+# The upstream Makefile bakes '${PWD}' (the build directory) into the binary
+# as the GX_PATH compile-time define. GX uses GX_PATH at runtime to invoke
 # helper scripts under geometry_modules/. Replace that with a Make variable
-# we can set to the install path so conda's prefix-replacement rewrites it
-# at install time.
+# set to the install path so conda's prefix-replacement rewrites it at install
+# time.
 sed -i 's|-DGX_PATH=\\"${PWD}\\"|-DGX_PATH=\\"$(GX_DATA_DIR)\\"|g' Makefile
 
+# The upstream Makefile expects a system-specific Makefiles/Makefile.<GK_SYSTEM>.
+# Generate one for the conda-forge build environment.
 cat > Makefiles/Makefile.condaforge <<EOF
 # conda-forge configuration for GX
 # CUDA toolkit, MPI, NetCDF, HDF5, and GSL are all provided by the host env.
@@ -44,16 +41,16 @@ MPI_LIB = -L \${PREFIX}/lib -lmpi
 
 # CUDA libraries: cudart, NCCL, cuFFT (static), cuBLAS, cuSOLVER, cuTENSOR,
 # cuLIBOS (static; shipped in cuda-cudart-static for CUDA 12 and in the
-# separate cuda-culibos-static package for CUDA 13+). -lgomp pulls in the
+# separate cuda-culibos-static package for CUDA 13+). '-lgomp' pulls in the
 # GNU OpenMP runtime that some CUDA static libs reference.
 #
-# conda-forge's CUDA static libraries (libcufft_static.a, etc.) are installed
+# conda-forge's CUDA static libraries (e.g. libcufft_static.a) are installed
 # only under \${PREFIX}/targets/x86_64-linux/lib, not the top-level
 # \${PREFIX}/lib, so that path must be added explicitly.
 #
-# Upstream Makefiles also link -lnvToolsExt, but no GX source references any
-# NVTX symbols and CUDA 12 ships only the header-only NVTX3 API on
-# conda-forge (no libnvToolsExt.so), so the flag is dropped.
+# Upstream Makefiles also link '-lnvToolsExt', but no GX source references any
+# NVTX symbols and CUDA 12 ships only the header-only NVTX3 API on conda-forge
+# (no libnvToolsExt.so), so the flag is dropped.
 CUDA_INC = -I \${PREFIX}/include
 CUDA_LIB = -L \${PREFIX}/lib -L \${PREFIX}/targets/x86_64-linux/lib -lcufft_static -lcublas -lcusolver -lgomp -lcutensor -lnccl -lcudart -lculibos
 
@@ -62,25 +59,24 @@ GSL_LIB = -L \${PREFIX}/lib -lgsl -lgslcblas
 
 C_LIB = -lm -lpthread -ldl
 
-# Resolve \${CXX} and \${GENCODE_FLAGS} now (in the shell) so make sees a
-# literal compiler path. Leaving \${CXX} unexpanded would yield a recursive
-# self-reference (CXX = \${CXX}) when make evaluates the variable.
-# GX_DATA_DIR is the runtime location of geometry_modules/ (and any other
-# helper trees); the binary embeds it via -DGX_PATH after the sed patch
-# above. Using \${PREFIX} here lets conda's prefix-replacement rewrite the
-# baked path to the user's actual install prefix at install time.
+# Resolve \${CXX} and \${GENCODE_FLAGS} now (in the shell) so Make sees a path
+# literal. Leaving \${CXX} unexpanded would yield a recursive self-reference
+# (CXX = \${CXX}) when make evaluates the variable.
+# GX_DATA_DIR is the runtime location of geometry_modules/ which the gx binary
+# embeds via -DGX_PATH after the sed patch above. Use \${PREFIX} to allow
+# conda's prefix-replacement rewrite the baked path at install time.
 GX_DATA_DIR = \${PREFIX}/share/gx
 
 CXX = ${CXX}
 NVCC = nvcc
 # Use conda-forge CFLAGS over '-fPIC -O3'
 CFLAGS = ${CFLAGS}
-# nvcc forwards unknown flags to the host compiler thanks to
+# nvcc forwards unknown flags to the host compiler given
 # --forward-unknown-to-host-compiler, so appending \${CFLAGS} pipes the
 # conda-forge hardening flags (-march=..., -fstack-protector-strong,
 # -fdebug-prefix-map, ...) through to g++ for the host side of the .cu
-# compilation. -fPIC and -O2 (the conda-forge default) come from \${CFLAGS}
-# directly, so we don't repeat them here.
+# compilation. -fPIC and -O2 (the conda-forge default) are provided by
+# \${CFLAGS}.
 NVCCFLAGS = --forward-unknown-to-host-compiler -ccbin=${CXX} ${GENCODE_FLAGS} -use_fast_math -rdc=true ${CFLAGS}
 EOF
 
@@ -91,6 +87,7 @@ mkdir -p obj/geo
 make --jobs="${CPU_COUNT}" gx
 
 mkdir -p "${PREFIX}/bin"
+
 install -m 0755 gx "${PREFIX}/bin/gx"
 
 # Install the geometry helper trees (referenced at runtime via GX_PATH).
