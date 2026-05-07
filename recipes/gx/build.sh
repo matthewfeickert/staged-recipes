@@ -73,13 +73,19 @@ GX_DATA_DIR = \${PREFIX}/share/gx
 
 CXX = ${CXX}
 NVCC = nvcc
-CFLAGS = -fPIC -O3
-NVCCFLAGS = --forward-unknown-to-host-compiler -ccbin=${CXX} ${GENCODE_FLAGS} -use_fast_math -fPIC -rdc=true -O3
+# Use conda-forge CFLAGS over '-fPIC -O3'
+CFLAGS = ${CFLAGS}
+# nvcc forwards unknown flags to the host compiler thanks to
+# --forward-unknown-to-host-compiler, so appending \${CFLAGS} pipes the
+# conda-forge hardening flags (-march=..., -fstack-protector-strong,
+# -fdebug-prefix-map, ...) through to g++ for the host side of the .cu
+# compilation. -fPIC and -O2 (the conda-forge default) come from \${CFLAGS}
+# directly, so we don't repeat them here.
+NVCCFLAGS = --forward-unknown-to-host-compiler -ccbin=${CXX} ${GENCODE_FLAGS} -use_fast_math -rdc=true ${CFLAGS}
 EOF
 
 export GK_SYSTEM=condaforge
 
-# obj/geo/ must exist before make tries to populate it.
 mkdir -p obj/geo
 
 make --jobs="${CPU_COUNT}" gx
@@ -91,4 +97,6 @@ install -m 0755 gx "${PREFIX}/bin/gx"
 # The binary expects ${GX_PATH}/geometry_modules/miller/gx_geo.py and
 # similar paths to exist on the user's system after install.
 mkdir -p "${PREFIX}/share/gx/geometry_modules"
+# Note 'cp -R' is the modern syntax
+# c.f. https://pubs.opengroup.org/onlinepubs/9799919799/utilities/cp.html
 cp -R geometry_modules/. "${PREFIX}/share/gx/geometry_modules/"
