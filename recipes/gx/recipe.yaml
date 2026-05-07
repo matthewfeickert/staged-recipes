@@ -128,8 +128,8 @@ outputs:
         - scipy
         - matplotlib-base
         - netcdf4
-        - if: match(python, "<3.11")
-          then: tomli
+        # python <3.11
+        - tomli
 
     tests:
       - python:
