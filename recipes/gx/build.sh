@@ -29,10 +29,18 @@ MPI_INC = -I \${PREFIX}/include
 MPI_LIB = -L \${PREFIX}/lib -lmpi
 
 # CUDA libraries: cudart, NCCL, cuFFT (static), cuBLAS, cuSOLVER, cuTENSOR,
-# cuLIBOS (static, shipped in cuda-cudart-static), and NVTX. -lgomp pulls in
-# the GNU OpenMP runtime that some CUDA static libs reference.
+# cuLIBOS (static, shipped in cuda-cudart-static). -lgomp pulls in the GNU
+# OpenMP runtime that some CUDA static libs reference.
+#
+# conda-forge's CUDA static libraries (libcufft_static.a, etc.) are installed
+# only under \${PREFIX}/targets/x86_64-linux/lib, not the top-level
+# \${PREFIX}/lib, so that path must be added explicitly.
+#
+# Upstream Makefiles also link -lnvToolsExt, but no GX source references any
+# NVTX symbols and CUDA 12 ships only the header-only NVTX3 API on
+# conda-forge (no libnvToolsExt.so), so the flag is dropped.
 CUDA_INC = -I \${PREFIX}/include
-CUDA_LIB = -L \${PREFIX}/lib -lcufft_static -lcublas -lcusolver -lgomp -lcutensor -lnccl -lcudart -lculibos -lnvToolsExt
+CUDA_LIB = -L \${PREFIX}/lib -L \${PREFIX}/targets/x86_64-linux/lib -lcufft_static -lcublas -lcusolver -lgomp -lcutensor -lnccl -lcudart -lculibos
 
 GSL_INC = -I \${PREFIX}/include
 GSL_LIB = -L \${PREFIX}/lib -lgsl -lgslcblas

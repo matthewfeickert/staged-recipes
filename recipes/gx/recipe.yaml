@@ -20,6 +20,8 @@ source:
 
 build:
   number: 0
+  # Example: cuda129_mpi_mpich_py314_h<hash>_<build_number>
+  string: cuda${{ cuda_compiler_version | version_to_buildstring }}_mpi_${{ mpi }}_py${{ python | version_to_buildstring }}_h${{ hash }}_${{ build_number }}
   skip:
     - not linux
     - match(cuda_compiler_version, "==None")
@@ -53,14 +55,14 @@ requirements:
     - libnetcdf
     - libnetcdf [build=mpi_${{ mpi }}_*]
     - netcdf-fortran [build=mpi_${{ mpi }}_*]
-    - mpi [build=${{ mpi }}]
+    - ${{ mpi }}
   run:
     - ${{ pin_compatible("cuda-version", lower_bound="x", upper_bound="x") }}
     - gsl
     - hdf5 * [build=mpi_${{ mpi }}_*]
     - libnetcdf * [build=mpi_${{ mpi }}_*]
     - netcdf-fortran * [build=mpi_${{ mpi }}_*]
-    - mpi [build=${{ mpi }}]
+    - ${{ mpi }}
     - python
     - numpy
     - scipy
@@ -74,6 +76,17 @@ tests:
       strict: true
       bin:
         - gx
+  # Smoke test: gx (no args) prints a usage hint to stderr and exits 1 before
+  # ever touching the CUDA driver, so we can run it on a GPU-less CI host as
+  # long as the dynamic loader can resolve libcuda.so.1. cuda-driver-dev
+  # ships a stub at $PREFIX/lib/stubs/libcuda.so for that purpose.
+  - script:
+      - if [ ! -e ${PREFIX}/lib/stubs/libcuda.so.1 ]; then ln -s libcuda.so ${PREFIX}/lib/stubs/libcuda.so.1; fi
+      - export LD_LIBRARY_PATH=${PREFIX}/lib/stubs${LD_LIBRARY_PATH:+:}${LD_LIBRARY_PATH:-}
+      - gx 2>&1 | grep -q "correct usage"
+    requirements:
+      run:
+        - cuda-driver-dev
 
 about:
   homepage: https://bitbucket.org/gyrokinetics/gx/

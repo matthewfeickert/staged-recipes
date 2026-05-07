@@ -1,3 +1,11 @@
 mpi:
   - mpich
   - openmpi
+
+# conda-forge default c_stdlib_version is 2.17, but the conda-forge CUDA 12.9
+# shared libraries (libcublas, libcutensor, libcusolver, libnccl) reference
+# glibc >= 2.28 symbols (powf@GLIBC_2.27, __cxa_thread_atexit_impl@GLIBC_2.18,
+# pthread_setattr_default_np@GLIBC_2.18, getrandom@GLIBC_2.25). Bump the
+# sysroot to 2.28 so linking against those CUDA libs resolves.
+c_stdlib_version:
+  - "2.28"
