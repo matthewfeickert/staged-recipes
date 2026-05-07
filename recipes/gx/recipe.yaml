@@ -1,11 +1,9 @@
 schema_version: 1
 
-# Upstream has no tagged releases or version numbers. We pin to the latest
-# commit on the 'gx' branch as of 2025-03-04 and encode that date in the
-# version string so future updates can be ordered.
-
+# Upstream has no tagged releases or version numbers. Pin to the latest
+# commit on the 'gx' branch.
 context:
-  version: "0.0.0.20250304"
+  version: "0.1.0"
   commit: "bc2fe5523c23e3d0198181a3e3b7c8a482e25ba5"
 
 recipe:
@@ -13,8 +11,8 @@ recipe:
   version: ${{ version }}
 
 source:
-  git: https://bitbucket.org/gyrokinetics/gx.git
-  rev: ${{ commit }}
+  url: https://bitbucket.org/gyrokinetics/gx/get/${{ commit }}.tar.gz
+  sha256: 63d3be728b21532437c5581b641676c33138d12aacbfc768bcdf423eccb92f15
 
 build:
   number: 0
