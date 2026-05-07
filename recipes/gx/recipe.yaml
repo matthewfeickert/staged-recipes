@@ -169,7 +169,7 @@ outputs:
           - which gx
 
 about:
-  homepage: https://bitbucket.org/gyrokinetics/gx/
+  homepage: https://gx.readthedocs.io/
   summary: GPU-native gyrokinetic turbulence solver
   description: |
     GX is a code for solving the nonlinear gyrokinetic system for low-frequency
