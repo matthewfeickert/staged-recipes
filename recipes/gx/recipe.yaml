@@ -43,7 +43,7 @@ requirements:
     - libcufft-dev
     - libcufft-static
     - libcusolver-dev
-    - libcutensor-dev
+    - cutensor
     - libnccl-dev
     - gsl
     # Repeat of requirements with no constraint and with build variant are to
