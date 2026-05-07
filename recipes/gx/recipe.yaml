@@ -44,7 +44,7 @@ requirements:
     - libcufft-static
     - libcusolver-dev
     - cutensor
-    - libnccl-dev
+    - nccl
     - gsl
     # Repeat of requirements with no constraint and with build variant are to
     # pick up global pinning (from no constraint)
