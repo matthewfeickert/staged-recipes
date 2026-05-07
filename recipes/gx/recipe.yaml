@@ -109,12 +109,10 @@ outputs:
   # Convenience metapackage: gx-core plus a Python interpreter so the
   # geometry helper scripts under share/gx/geometry_modules/ (invoked by
   # the gx binary at runtime, e.g. for Miller geometry) can be run.
-  # gx_geo.py imports numpy, scipy, toml, and (optionally) netCDF4; these
-  # are not pulled in here per the requested minimal layout, so users who
-  # need Miller geometry should install them alongside.
   - package:
       name: gx
     build:
+      # Should this be made noarch: python?
       noarch: generic
       # Metapackage: no build payload, do nothing.
       script: "true"
