@@ -107,6 +107,11 @@ outputs:
           - test -n "${CALCHEP}"
           - test -f "${CALCHEP}/calchep.ini"
 
+          - mkWORKdir _example
+          - cd _example
+          - ./calchep_batch --help || echo 0
+          - ./calchep_batch $CALCHEP/utile/batch_file
+
   - package:
       name: calchep-gui
     inherit: calchep-build
