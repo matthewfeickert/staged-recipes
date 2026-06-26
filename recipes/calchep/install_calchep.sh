@@ -39,6 +39,15 @@ sed -i.bak -E \
   "${CALCHEP_HOME}/FlagsForMake"
 rm -f "${CALCHEP_HOME}/FlagsForSh.bak" "${CALCHEP_HOME}/FlagsForMake.bak"
 
+# Make the bundled Perl scripts (e.g. bin/run_batch, reached from a work dir via
+# its bin -> $CALCHEP/bin symlink) portable: rewrite the hard-coded
+# ``#!/usr/bin/perl`` shebang to an env-based one so they resolve perl from the
+# active environment (the ``perl`` run dependency) instead of a fixed system
+# path. conda does not rewrite this automatically (it is not a prefix path).
+while IFS= read -r script; do
+  sed -i '1s@^#![[:space:]]*/usr/bin/perl@#!/usr/bin/env perl@' "${script}"
+done < <(grep -rlE '^#![[:space:]]*/usr/bin/perl' "${CALCHEP_HOME}" 2>/dev/null || true)
+
 # Expose the user-facing tools via relative (relocatable) symlinks under their
 # upstream names. Internal JIT helpers (make_main, mkLibstat, mkLibshared,
 # subproc_cycle, make_VandP, Int) and the work-dir-internal ``calc`` are
