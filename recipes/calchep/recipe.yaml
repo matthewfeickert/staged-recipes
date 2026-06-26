@@ -112,6 +112,13 @@ outputs:
           - ./calchep_batch --help || echo 0
           - ./calchep_batch $CALCHEP/utile/batch_file
 
+        requirements:
+          #TODO: Make these run exports but without all the extra things
+          run:
+            - cxx-compiler
+            - fortran-compiler
+            - gnuplot
+
   - package:
       name: calchep-gui
     inherit: calchep-build
