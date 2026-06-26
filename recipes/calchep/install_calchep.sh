@@ -48,6 +48,15 @@ while IFS= read -r script; do
   sed -i '1s@^#![[:space:]]*/usr/bin/perl@#!/usr/bin/env perl@' "${script}"
 done < <(grep -rlE '^#![[:space:]]*/usr/bin/perl' "${CALCHEP_HOME}" 2>/dev/null || true)
 
+# When CalcHEP builds a process's n_calchep at run time, sbin/ld_n links it
+# against the per-process lf*.so libraries sitting beside it and relies on
+# LD_RUN_PATH="$PWD" to record that directory as the rpath. But the conda-forge
+# gcc wrapper injects its own -Wl,-rpath,$CONDA_PREFIX/lib, and an explicit
+# -rpath makes the linker ignore LD_RUN_PATH -- so n_calchep ends up unable to
+# load its sibling lf*.so ("cannot open shared object file"). Add an explicit
+# $ORIGIN rpath so n_calchep always finds the libraries next to itself.
+sed -i "s@ -o n_calchep@ -Wl,-rpath,'\$ORIGIN' -o n_calchep@" "${CALCHEP_HOME}/sbin/ld_n"
+
 # Expose the user-facing tools via relative (relocatable) symlinks under their
 # upstream names. Internal JIT helpers (make_main, mkLibstat, mkLibshared,
 # subproc_cycle, make_VandP, Int) and the work-dir-internal ``calc`` are
