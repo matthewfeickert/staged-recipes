@@ -8,6 +8,15 @@ recipe:
 source:
   - url: https://theory.sinp.msu.ru/~pukhov/CALCHEP/calchep_${{ version }}.tgz
     sha256: 802b7d7e776643b3a46f0611bb4f43f1ba9a84ebe071c251b2caf7ddb36e5043
+    patches:
+      # initStrFun() writes nnan[i1-1]/sf_be[i1-1] before validating i1; called
+      # as initStrFun(0) it writes nnan[-1], which the -O2 BSS layout overlaps
+      # with the adjacent ``plist`` pointer -> truncated pointer -> SIGSEGV in
+      # realloc during numerical integration. (Reported upstream.)
+      - patches/0001-fix-initStrFun-out-of-bounds-write-segfault.patch
+      # Zero-argument min()/max() in the QCD-scale parser: malloc(0)+strcpy
+      # overflow / out-of-bounds args[0] read (latent; reported upstream).
+      - patches/0002-qcdScale-guard-zero-arg-min-max-overflow.patch
 
 build:
   number: 0
@@ -110,7 +119,7 @@ outputs:
       # End-to-end batch run: CalcHEP generates, compiles and integrates the
       # process on demand. That needs the run-time toolchain, so the bare-named
       # compilers (FlagsForSh records gcc/g++/gfortran, not the prefixed
-      # ${{ compiler() }} names), make, and gnuplot (for the distribution plots)
+      # compiler() names), make, and gnuplot (for the distribution plots)
       # are pulled into the *test* environment only -- they are deliberately not
       # package run dependencies (process generation is opt-in).
       - requirements:
@@ -127,9 +136,10 @@ outputs:
           - ./calchep_batch -help
           - ./calchep_batch "${CALCHEP}/utile/batch_file"
           # A cross-section result must actually be produced (gcc + make), and
-          # the distribution plot images require gnuplot.
+          # the distribution plot images require gnuplot. Both land at the top of
+          # batch_results/ (the run name is "test", so plots are test-Mh*_*.jpg).
           - test -f batch_results/test-cs.dat
-          - test -f batch_results/test/html/Mh120_1.jpg
+          - test -f batch_results/test-Mh120_1.jpg
 
   - package:
       name: calchep-gui
