@@ -107,18 +107,29 @@ outputs:
           - test -n "${CALCHEP}"
           - test -f "${CALCHEP}/calchep.ini"
 
-          - mkWORKdir _example
-          - cd _example
-          - ./calchep_batch --help || echo 0
-          - ./calchep_batch $CALCHEP/utile/batch_file
-
-        requirements:
-          #TODO: Make these run exports but without all the extra things
+      # End-to-end batch run: CalcHEP generates, compiles and integrates the
+      # process on demand. That needs the run-time toolchain, so the bare-named
+      # compilers (FlagsForSh records gcc/g++/gfortran, not the prefixed
+      # ${{ compiler() }} names), make, and gnuplot (for the distribution plots)
+      # are pulled into the *test* environment only -- they are deliberately not
+      # package run dependencies (process generation is opt-in).
+      - requirements:
           run:
-            - cxx-compiler
-            - fortran-compiler
+            - gcc
+            - gxx
+            - gfortran
             - make
             - gnuplot
+        script:
+          - mkWORKdir _example
+          - cd _example
+          # -help is a single dash; --help is unrecognized and exits 6.
+          - ./calchep_batch -help
+          - ./calchep_batch "${CALCHEP}/utile/batch_file"
+          # A cross-section result must actually be produced (gcc + make), and
+          # the distribution plot images require gnuplot.
+          - test -f batch_results/test-cs.dat
+          - test -f batch_results/test/html/Mh120_1.jpg
 
   - package:
       name: calchep-gui
