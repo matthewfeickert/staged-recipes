@@ -39,16 +39,15 @@ sed -i.bak -E \
   "${CALCHEP_HOME}/FlagsForMake"
 rm -f "${CALCHEP_HOME}/FlagsForSh.bak" "${CALCHEP_HOME}/FlagsForMake.bak"
 
-# Expose the user-facing tools via relative (relocatable) symlinks, namespaced
-# with a ``calchep-`` prefix to avoid colliding with generic names on PATH
-# (e.g. CalcHEP's bare ``calc``/``Int``). Internal JIT helpers (make_main,
-# mkLibstat, mkLibshared, subproc_cycle, make_VandP, Int) are intentionally not
-# exposed; they remain reachable via ${CALCHEP}/bin.
+# Expose the user-facing tools via relative (relocatable) symlinks under their
+# upstream names. Internal JIT helpers (make_main, mkLibstat, mkLibshared,
+# subproc_cycle, make_VandP, Int) and the work-dir-internal ``calc`` are
+# intentionally not exposed; they remain reachable via ${CALCHEP}/bin.
 mkdir -p "${PREFIX}/bin"
-ln -s "../share/calchep/mkWORKdir" "${PREFIX}/bin/calchep-mkWORKdir"
+ln -s "../share/calchep/mkWORKdir" "${PREFIX}/bin/mkWORKdir"
 for tool in s_calchep event2lhe events2tab lhe2tab event_mixer \
             show_distr sum_distr lhapdf2pdt; do
-  ln -s "../share/calchep/bin/${tool}" "${PREFIX}/bin/calchep-${tool}"
+  ln -s "../share/calchep/bin/${tool}" "${PREFIX}/bin/${tool}"
 done
 
 # Activation scripts (bash/POSIX, csh, fish) export CALCHEP so the engine and

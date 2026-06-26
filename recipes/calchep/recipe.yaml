@@ -49,7 +49,7 @@ outputs:
         file: install_calchep
       files:
         - share/calchep/**
-        - bin/calchep-*
+        - bin/*
         - etc/conda/**
 
     requirements:
@@ -64,20 +64,23 @@ outputs:
         - ${{ compiler("cxx") }}
         - ${{ compiler("fortran") }}
         - sed
+      run:
+        # runtime generated bin/ directory contains perl scripts
+        - perl
 
     tests:
       - package_contents:
           # strict: true
           bin:
-            - calchep-s_calchep
-            - calchep-mkWORKdir
-            - calchep-event2lhe
-            - calchep-event_mixer
-            - calchep-events2tab
-            - calchep-lhapdf2pdt
-            - calchep-lhe2tab
-            - calchep-show_distr
-            - calchep-sum_distr
+            - s_calchep
+            - mkWORKdir
+            - event2lhe
+            - event_mixer
+            - events2tab
+            - lhapdf2pdt
+            - lhe2tab
+            - show_distr
+            - sum_distr
           files:
             - share/calchep/FlagsForSh
             - share/calchep/calchep.ini
@@ -99,7 +102,7 @@ outputs:
             - etc/conda/deactivate.d/calchep_deactivate.fish
       - script:
           # --version needs no compiler and exits before opening any display.
-          - calchep-s_calchep --version
+          - s_calchep --version
           # The activation script must export CALCHEP into the (run-in-place) tree.
           - test -n "${CALCHEP}"
           - test -f "${CALCHEP}/calchep.ini"
