@@ -1,0 +1,175 @@
+context:
+  version: "3.8.4"
+
+recipe:
+  name: calchep
+  version: ${{ version }}
+
+source:
+  - url: https://theory.sinp.msu.ru/~pukhov/CALCHEP/calchep_${{ version }}.tgz
+    sha256: 802b7d7e776643b3a46f0611bb4f43f1ba9a84ebe071c251b2caf7ddb36e5043
+
+build:
+  number: 0
+  # POSIX build system (Makefile + getFlags + sh); no Windows support.
+  # osx is skipped for now: the pre-seeded compiler flags target Linux, and
+  # macOS needs Darwin-specific handling (clang -dynamiclib, -install_name,
+  # `ranlib -c`, no -rdynamic) plus validation on a Mac. Tracked as a follow-up.
+  skip:
+    - win
+    - osx
+
+outputs:
+  # The staging output builds the run-in-place tree (in blind, non-X11 mode) once
+  # under $PREFIX/share/calchep, including every X11-independent library and all
+  # intermediate objects. Both package outputs inherit it: ``calchep`` ships the
+  # blind tree as-is, while ``calchep-gui`` re-links only the interactive
+  # front-end against X11, reusing the cached libraries.
+  - staging:
+      name: calchep-build
+
+    build:
+      script:
+        file: build_cache
+
+    requirements:
+      build:
+        - ${{ stdlib("c") }}
+        - ${{ compiler("c") }}
+        - ${{ compiler("cxx") }}
+        - ${{ compiler("fortran") }}
+        - make
+
+  - package:
+      name: calchep
+    inherit: calchep-build
+
+    build:
+      script:
+        file: install_calchep
+      files:
+        - share/calchep/**
+        - bin/calchep-*
+        - etc/conda/**
+
+    requirements:
+      build:
+        # The shipped binaries/libraries are produced by the staging build; the
+        # compilers are declared here so their run-exports (libgcc, libstdcxx,
+        # libgfortran) populate this package's run dependencies. No compiler is
+        # pinned in ``run``: generating a process compiles code on demand and
+        # needs a user-provided toolchain at run time (see about.description).
+        - ${{ stdlib("c") }}
+        - ${{ compiler("c") }}
+        - ${{ compiler("cxx") }}
+        - ${{ compiler("fortran") }}
+        - sed
+
+    tests:
+      - package_contents:
+          # strict: true
+          bin:
+            - calchep-s_calchep
+            - calchep-mkWORKdir
+            - calchep-event2lhe
+            - calchep-event_mixer
+            - calchep-events2tab
+            - calchep-lhapdf2pdt
+            - calchep-lhe2tab
+            - calchep-show_distr
+            - calchep-sum_distr
+          files:
+            - share/calchep/FlagsForSh
+            - share/calchep/calchep.ini
+            # Are these bins and libs supposed to be here?
+            - share/calchep/bin/s_calchep
+            - share/calchep/bin/calc
+            - share/calchep/lib/num_c.a
+            - share/calchep/lib/ntools.a
+            - share/calchep/lib/dynamic_me.a
+            - share/calchep/lib/libSLHAplus.a
+            - share/calchep/lib/sqme_aux.so
+            - share/calchep/lib/servNoX11.a
+            # - share/calchep/*
+            - etc/conda/activate.d/calchep_activate.sh
+            - etc/conda/activate.d/calchep_activate.csh
+            - etc/conda/activate.d/calchep_activate.fish
+            - etc/conda/deactivate.d/calchep_deactivate.sh
+            - etc/conda/deactivate.d/calchep_deactivate.csh
+            - etc/conda/deactivate.d/calchep_deactivate.fish
+      - script:
+          # --version needs no compiler and exits before opening any display.
+          - calchep-s_calchep --version
+          # The activation script must export CALCHEP into the (run-in-place) tree.
+          - test -n "${CALCHEP}"
+          - test -f "${CALCHEP}/calchep.ini"
+
+  - package:
+      name: calchep-gui
+    inherit: calchep-build
+
+    build:
+      script:
+        file: build_gui
+      files:
+        - share/calchep-gui/**
+        - bin/calchep-gui
+
+    requirements:
+      build:
+        - ${{ stdlib("c") }}
+        - ${{ compiler("c") }}
+        - ${{ compiler("cxx") }}
+        - make
+        - sed
+      host:
+        # X11/Xlib.h + libX11 from xorg-libx11; the X11/X.h protocol headers it
+        # includes come from xorg-xorgproto.
+        - xorg-libx11
+        - xorg-xorgproto
+      run:
+        # The GUI binary's data tree and libraries come from the blind package.
+        - ${{ pin_subpackage("calchep", exact=True) }}
+
+    tests:
+      - package_contents:
+          bin:
+            - calchep-gui
+          files:
+            - share/calchep-gui/bin/s_calchep
+      - script:
+          - calchep-gui --version
+
+about:
+  homepage: https://theory.sinp.msu.ru/~pukhov/calchep.html
+  documentation: https://theory.sinp.msu.ru/~pukhov/calchep.html
+  license: GPL-3.0-or-later
+  license_file: LICENSE
+  summary: Calculation of Feynman diagrams and integration over multi-particle phase space
+  description: |
+    CalcHEP is a package for automatic calculations of elementary particle decay
+    and collision properties in the lowest order of perturbation theory
+    (the tree approximation).
+    The main idea prescribed into the CalcHEP is to make available passing on
+    from the Lagrangian to the final distributions effectively with a high
+    level of automation.
+
+    Two variants are provided:
+
+    * `calchep` builds in "blind" (non-interactive) mode, with no X11
+      dependency. The symbolic engine, numerical integration, batch operation,
+      and matrix-element generation all work; only the interactive graphical
+      menu is unavailable.
+    * `calchep-gui` adds the X11-enabled interactive `calchep-gui` front-end
+      (it depends on `calchep` for the shared data and libraries).
+
+    CalcHEP is a run-in-place package installed under `$CONDA_PREFIX/share/calchep`;
+    activation exports the `CALCHEP` environment variable. Generating a new
+    process compiles code on demand at run time, which requires a C and Fortran
+    compiler in the environment, e.g. the conda-forge `gcc`, `gxx`, and
+    `gfortran` packages.
+
+extra:
+  feedstock-name: calchep
+  recipe-maintainers:
+    - matthewfeickert
