@@ -144,8 +144,6 @@ outputs:
       - requirements:
           run:
             - gcc
-            - gxx
-            - gfortran
             - make
             - gnuplot
         script:
