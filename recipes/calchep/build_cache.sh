@@ -67,6 +67,38 @@ make </dev/null
 # Re-assert the install path in include/rootDir.h and the bin/* helper scripts.
 ./sbin/setPath "${CALCHEP_HOME}"
 
+# Bundle the numerical static archives into ONE shared library so the package ships
+# a shared lib instead of static .a (conda-forge prefers shared). A SINGLE combined
+# .so is required: CalcHEP's -fcommon tentative globals (nin_int, nprc_int, ...) are
+# shared across these archives and merged at link; separate per-archive .so would
+# give each its own copy and break the engine. --whole-archive pulls in every object
+# so all symbols are present; symbols provided by n_calchep.o and the per-process
+# libs stay undefined and resolve at the run-time n_calchep link (normal for a .so).
+# dummy.a (overridable user-function stubs) is intentionally kept static and linked
+# last by ld_n. dynamic_vp.a (vp_dynam.o) is likewise kept OUT of the .so: sbin/ld_n
+# never links it into n_calchep, and it defines the model tables (nModelParticles,
+# ModelPrtcls, varNames, varValues, ...) as -fcommon tentative globals. Those must
+# stay UNDEFINED in n_calchep so the run-time-dlopen'd VandP.so supplies the real
+# model; folding them into libcalchep.so (loaded NEEDED at startup) would define them
+# as zero-filled BSS that shadows VandP.so, so the engine reads an empty particle
+# table and segfaults during integration. dynamic_vp.a stays static, linked only by
+# bin/make_main (its sole consumer). The .so thus holds exactly the core archives that
+# n_calchep already linked statically -- no symbol it did not previously define.
+#
+# faux.o (the Fortran half of the SLHA bridge: fortranreadline_, cmixmatrix_, ...) is
+# linked in because the C half (libSLHAplus's fortran.o, pulled by --whole-archive)
+# calls it at run time, so -lgfortran is needed too (libgfortran is already a run dep
+# via the Fortran compiler's run-export). The LHAPDF interface (sf_lha.o) keeps its
+# undefined libLHAPDF symbols (evolvePDFm, ...): LHAPDF is opt-in, so they resolve
+# lazily at run time only when a user supplies LHAPDF -- hence the consumer links use
+# -Wl,--allow-shlib-undefined (see install_calchep.sh and patches/0004).
+( cd lib && \
+  "${CC}" ${CFLAGS:-} -shared -Wl,-soname,libcalchep.so -o libcalchep.so \
+    -Wl,--whole-archive \
+      num_c.a ntools.a dynamic_me.a libSLHAplus.a serv.a \
+    -Wl,--no-whole-archive \
+      faux.o -lm -lgfortran -lquadmath )
+
 # The work/bin symlink points at the absolute build-prefix bin/ and would not
 # survive relocation; drop it (mkWORKdir recreates a correct one per work dir).
 rm -f work/bin
