@@ -17,6 +17,10 @@ source:
       # Zero-argument min()/max() in the QCD-scale parser: malloc(0)+strcpy
       # overflow / out-of-bounds args[0] read (latent; reported upstream).
       - patches/0002-qcdScale-guard-zero-arg-min-max-overflow.patch
+      # readDistributions() reads a session record into a malloc'd histRec;
+      # fscanf gaps leave fields uninitialised (later printed). calloc zero-
+      # fills them (valgrind-clean; harmless but undefined behaviour).
+      - patches/0003-histogram-calloc-distribution-record.patch
 
 build:
   number: 0
