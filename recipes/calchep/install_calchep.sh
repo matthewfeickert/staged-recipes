@@ -48,6 +48,25 @@ while IFS= read -r script; do
   sed -i '1s@^#![[:space:]]*/usr/bin/perl@#!/usr/bin/env perl@' "${script}"
 done < <(grep -rlE '^#![[:space:]]*/usr/bin/perl' "${CALCHEP_HOME}" 2>/dev/null || true)
 
+# CalcHEP's shell scripts use the historical Bourne convention of a bare ":"
+# first line instead of a "#!" shebang, and sbin/setPath re-bakes that ":" into
+# several of them (mkWORKdir, bin/mkLibstat, ...). A script with no shebang cannot
+# be exec'd directly -- it fails with ENOEXEC ("Exec format error") under strict
+# launchers such as pixi's task shell (deno), even though /bin/sh-based callers
+# (system(), bash) silently fall back to sh. Give every such script (they are all
+# Bourne) a real "#!/bin/sh". Binaries are excluded via grep -I; perl scripts
+# (rewritten above) start with "#!" so they do not match.
+while IFS= read -r -d '' script; do
+  head -1 "${script}" | grep -qxE ':[[:space:]]*' \
+    && sed -i '1s|^:[[:space:]]*$|#!/bin/sh|' "${script}"
+done < <(grep -rlIZE '^:[[:space:]]*$' "${CALCHEP_HOME}" 2>/dev/null || true)
+
+# mkWORKdir additionally writes a ":" header for the per-work-dir launcher scripts
+# it generates (./calchep, ./calchep_batch); emit "#!/bin/sh" instead so those are
+# directly executable too. Their cat'd bodies are /bin/sh; run_batch (perl) keeps
+# its own env shebang.
+sed -i 's|^echo ":|echo "#!/bin/sh|' "${CALCHEP_HOME}/mkWORKdir"
+
 # When CalcHEP builds a process's n_calchep at run time, sbin/ld_n links it
 # against the per-process lf*.so libraries sitting beside it and relies on
 # LD_RUN_PATH="$PWD" to record that directory as the rpath. But the conda-forge
