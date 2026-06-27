@@ -76,6 +76,37 @@ sed -i 's|^echo ":|echo "#!/bin/sh|' "${CALCHEP_HOME}/mkWORKdir"
 # $ORIGIN rpath so n_calchep always finds the libraries next to itself.
 sed -i "s@ -o n_calchep@ -Wl,-rpath,'\$ORIGIN' -o n_calchep@" "${CALCHEP_HOME}/sbin/ld_n"
 
+# Link the run-time numerical executables against the combined shared library
+# (libcalchep.so, produced by the staging build) instead of the individual static
+# archives: replace num_c.a with -lcalchep + an rpath to $CALCHEP/lib (so the
+# freshly built n_calchep finds it), and drop the other core archives now subsumed
+# by the .so. -Wl,--allow-shlib-undefined is required because the combined .so also
+# contains CalcHEP's optional-feature objects (the LHAPDF interface sf_lha.o and the
+# Fortran-SLHA bridge fortran.o) whose external symbols (evolvePDFm, fortranreadline_,
+# ...) are absent unless those features are used; they resolve lazily at run time only
+# if exercised (otherwise dead). dummy.a stays static and last (overridable user
+# stubs), as does dynamic_vp.a (the model-table storage that must NOT enter the .so;
+# bin/make_main is its only consumer -- see build_cache.sh); sqme_aux.so and the
+# per-process lib_0.a/ld*.a/lf*.so are untouched.
+# -rdynamic stays so the dlopen'd lf*.so resolve callbacks against n_calchep + the
+# (global) libcalchep.so. sbin/ld_n uses $cLib; bin/make_main uses $lib.
+sed -i -E \
+  -e 's@\$cLib/num_c\.a@-L$cLib -Wl,-rpath,$cLib -Wl,--allow-shlib-undefined -lcalchep@' \
+  -e 's@\$cLib/(ntools|dynamic_me|libSLHAplus|serv)\.a@@g' \
+  "${CALCHEP_HOME}/sbin/ld_n"
+sed -i -E \
+  -e 's@\$lib/num_c\.a@-L$lib -Wl,-rpath,$lib -Wl,--allow-shlib-undefined -lcalchep@' \
+  -e 's@\$lib/(ntools|dynamic_me|libSLHAplus|serv)\.a@@g' \
+  "${CALCHEP_HOME}/bin/make_main"
+
+# Ship the shared library; drop the now-redundant static archives. Keep dummy.a
+# (static overridable stubs), dynamic_vp.a (model-table storage; bin/make_main links
+# it at run time -- it must not be folded into the .so, see build_cache.sh) and
+# sqme_aux.so. symb.a is build-time only (the s_calchep / make_VandP / makeVrtLib
+# binaries are already linked and never relink at run time); servNoX11.a is a
+# micrOMEGAs-only variant (the blind engine uses serv).
+rm -f "${CALCHEP_HOME}/lib/"{num_c,ntools,dynamic_me,libSLHAplus,serv,servNoX11,symb}.a
+
 # Expose the user-facing tools via relative (relocatable) symlinks under their
 # upstream names. Internal JIT helpers (make_main, mkLibstat, mkLibshared,
 # subproc_cycle, make_VandP, Int) and the work-dir-internal ``calc`` are

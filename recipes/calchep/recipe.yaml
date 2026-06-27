@@ -21,6 +21,10 @@ source:
       # fscanf gaps leave fields uninitialised (later printed). calloc zero-
       # fills them (valgrind-clean; harmless but undefined behaviour).
       - patches/0003-histogram-calloc-distribution-record.patch
+      # Link the run-time-generated VandP.so against the combined shared library
+      # (libcalchep.so) instead of the individual static archives that are no
+      # longer shipped. (Pairs with the ld_n/make_main link edits in install_calchep.sh.)
+      - patches/0004-link-VandP.so-against-libcalchep.patch
 
 build:
   number: 0
@@ -100,12 +104,23 @@ outputs:
             # Are these bins and libs supposed to be here?
             - share/calchep/bin/s_calchep
             - share/calchep/bin/calc
-            - share/calchep/lib/num_c.a
-            - share/calchep/lib/ntools.a
-            - share/calchep/lib/dynamic_me.a
-            - share/calchep/lib/libSLHAplus.a
+            # The numerical core ships as one shared library (libcalchep.so), but
+            # dummy.a and dynamic_vp.a MUST remain static -- they depend on
+            # static-archive linking semantics a .so cannot provide:
+            #   * dummy.a holds fallback stubs (usrfun/usrFF and the LHAPDF API),
+            #     linked last. An archive member is pulled in only if its symbol is
+            #     still undefined, so a user's real LHAPDF/usrfun is used instead of
+            #     the stub. As a .so the stubs would always be defined and shadow
+            #     the user's versions (e.g. silently disabling LHAPDF).
+            #   * dynamic_vp.a (linked only by make_main) holds the -fcommon model
+            #     tables (ModelPrtcls, ...) that must live in the executable and be
+            #     filled at run time from the dlopen'd VandP.so. As a .so they would
+            #     shadow VandP.so -> empty particle table -> segfault.
+            # sqme_aux.so is already shared.
+            - share/calchep/lib/libcalchep.so
+            - share/calchep/lib/dummy.a
+            - share/calchep/lib/dynamic_vp.a
             - share/calchep/lib/sqme_aux.so
-            - share/calchep/lib/servNoX11.a
             # - share/calchep/*
             - etc/conda/activate.d/calchep_activate.sh
             - etc/conda/activate.d/calchep_activate.csh
@@ -206,9 +221,10 @@ about:
 
     CalcHEP is a run-in-place package installed under `$CONDA_PREFIX/share/calchep`;
     activation exports the `CALCHEP` environment variable. Generating a new
-    process compiles code on demand at run time, which requires a C and Fortran
-    compiler in the environment, e.g. the conda-forge `gcc`, `gxx`, and
-    `gfortran` packages.
+    process compiles C code on demand at run time, so a C compiler must be in the
+    environment, e.g. the conda-forge `gcc` package or the `c-compiler`
+    metapackage. (A Fortran compiler is only needed for models that use
+    user-defined Fortran functions; standard process generation is C only.)
 
 extra:
   feedstock-name: calchep
