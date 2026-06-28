@@ -35,6 +35,16 @@ cd "${CALCHEP_HOME}"
 # older C trips them (e.g. a pthread_create thread routine typed `int *` rather
 # than `void *`). Downgrade them back to warnings so the upstream sources build
 # unmodified. (C-only; not added to CXXFLAGS.)
+#
+# lQuad is left EMPTY. CalcHEP only links libquadmath when nType.h selects
+# __float128 (the opt-in _QUADGCC_ high-precision mode); the default REAL=double
+# build never references it -- upstream getFlags sets lQuad="" via the same
+# _QUADGCC_ probe. Hardcoding -lquadmath added a spurious, unused NEEDED that is
+# also non-portable (libquadmath is an x86_64-with-gcc library: clang/macOS ships
+# none, and aarch64's native 128-bit long double makes it unnecessary). libgfortran
+# -- a genuine dependency of the SLHA Fortran bridge below -- still pulls libquadmath
+# in transitively on platforms whose libgfortran needs it (x86_64) and not elsewhere
+# (aarch64), which is exactly the portable behaviour.
 LEGACY_C="-Wno-error=implicit-function-declaration -Wno-error=incompatible-pointer-types -Wno-error=int-conversion -Wno-error=implicit-int"
 cat > FlagsForSh <<EOF
 CC="${CC}"
@@ -53,7 +63,7 @@ CXX="${CXX}"
 CXXFLAGS="${CXXFLAGS:-} -fPIC -fcommon"
 RANLIB="${RANLIB:-ranlib}"
 MAKE=make
-lQuad="-lquadmath"
+lQuad=
 export CC CFLAGS lDL LX11 SHARED SONAME SO FC FFLAGS RANLIB CXX CXXFLAGS lFort lQuad MAKE
 EOF
 
@@ -97,7 +107,7 @@ make </dev/null
     -Wl,--whole-archive \
       num_c.a ntools.a dynamic_me.a libSLHAplus.a serv.a \
     -Wl,--no-whole-archive \
-      faux.o -lm -lgfortran -lquadmath )
+      faux.o -lm -lgfortran )
 
 # The work/bin symlink points at the absolute build-prefix bin/ and would not
 # survive relocation; drop it (mkWORKdir recreates a correct one per work dir).
