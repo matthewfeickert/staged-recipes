@@ -86,6 +86,8 @@ outputs:
         - perl
         - if: linux
           then: gcc
+        - if: osx
+          then: clang
 
     tests:
       - package_contents:
