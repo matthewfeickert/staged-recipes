@@ -170,7 +170,9 @@ outputs:
           # histograms the LHE events (M(5,-5) = M(b,bbar), always in the final
           # state) and records the worst energy-momentum imbalance; assert the
           # events conserve 4-momentum (~1e-11, far below the 1e-6 tolerance).
-          - zcat batch_results/test-Mh120.lhe.gz > events.lhe
+          # (gzip -dc, not zcat: macOS zcat is the legacy compress tool and looks
+          # for a .Z file instead of decompressing the .gz.)
+          - gzip -dc batch_results/test-Mh120.lhe.gz > events.lhe
           - lhe2tab "M(5,-5)" 0 400 50 < events.lhe > hist.txt
           - grep -q "lost_momenta_max" hist.txt
           - awk '/lost_momenta_max.Etot/{for(i=2;i<=NF;i++) if($i+0>1e-6) exit 1}' hist.txt
