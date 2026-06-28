@@ -24,16 +24,15 @@ fi
 # Record portable, bare compiler names for the run-time JIT compilation step.
 # The build-time conda compiler (e.g. x86_64-conda-linux-gnu-cc) does not exist
 # at run time, and its build-only CFLAGS (sysroot, -fdebug-prefix-map, ...) would
-# be wrong there too. Reset to CalcHEP's portable defaults; bare gcc/g++/gfortran
-# resolve when the user has the conda-forge gcc/gxx/gfortran packages (or system
-# compilers). Generating a new process requires such a compiler in the
-# environment (see about.description). -fcommon is kept for the same reason it is
-# needed at build time. SNUM/SO/lDL/lFort/lQuad determined by getFlags are left
+# be wrong there too. Reset to CalcHEP's portable defaults; the bare gcc (Linux) /
+# clang (macOS) is a package run dependency (see recipe.yaml), so the run-time JIT
+# always has a compiler. -fcommon is kept for the same reason it is needed at build
+# time. SNUM/SO/lDL/lFort/lQuad determined by getFlags are left
 # untouched so run-time compilation matches the shipped libraries. The
 # -Wno-error=* flags keep on-demand process compilation working on the user's
 # GCC >= 14 (which errors on the same legacy-C constructs as at build time).
 LEGACY_C="-Wno-error=implicit-function-declaration -Wno-error=incompatible-pointer-types -Wno-error=int-conversion -Wno-error=implicit-int"
-sed -i.bak -E \
+sed -i -E \
   -e "s|^CC=.*|CC=\"${_CC}\"|" \
   -e "s|^CXX=.*|CXX=\"${_CXX}\"|" \
   -e 's|^FC=.*|FC="gfortran"|' \
@@ -42,7 +41,7 @@ sed -i.bak -E \
   -e 's|^FFLAGS=.*|FFLAGS="-fno-automatic"|' \
   -e "s|^RANLIB=.*|RANLIB=\"${_RANLIB}\"|" \
   "${CALCHEP_HOME}/FlagsForSh"
-sed -i.bak -E \
+sed -i -E \
   -e "s|^CC = .*|CC = ${_CC}|" \
   -e "s|^CXX=.*|CXX=${_CXX}|" \
   -e 's|^FC = .*|FC = gfortran|' \
@@ -51,7 +50,6 @@ sed -i.bak -E \
   -e 's|^FFLAGS = .*|FFLAGS = -fno-automatic|' \
   -e "s|^RANLIB = .*|RANLIB = ${_RANLIB}|" \
   "${CALCHEP_HOME}/FlagsForMake"
-rm -f "${CALCHEP_HOME}/FlagsForSh.bak" "${CALCHEP_HOME}/FlagsForMake.bak"
 
 # Make the bundled Perl scripts (e.g. bin/run_batch, reached from a work dir via
 # its bin -> $CALCHEP/bin symlink) portable: rewrite the hard-coded

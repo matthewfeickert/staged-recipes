@@ -113,8 +113,11 @@ make </dev/null
 # give each its own copy and break the engine. --whole-archive pulls in every object
 # so all symbols are present; symbols provided by n_calchep.o and the per-process
 # libs stay undefined and resolve at the run-time n_calchep link (normal for a .so).
-# dummy.a (overridable user-function stubs) is intentionally kept static and linked
-# last by ld_n. dynamic_vp.a (vp_dynam.o) is likewise kept OUT of the .so: sbin/ld_n
+# dummy.a (overridable stubs: usrfun/usrFF + the LHAPDF API) is intentionally kept
+# static and linked last by ld_n -- a static-archive member is pulled in only if its
+# symbol is otherwise undefined, so a user's real LHAPDF/usrfun overrides the stub (a
+# .so would always define them and shadow the user's, e.g. silently disabling LHAPDF).
+# dynamic_vp.a (vp_dynam.o) is likewise kept OUT of the .so: sbin/ld_n
 # never links it into n_calchep, and it defines the model tables (nModelParticles,
 # ModelPrtcls, varNames, varValues, ...) as -fcommon tentative globals. Those must
 # stay UNDEFINED in n_calchep so the run-time-dlopen'd VandP.so supplies the real
