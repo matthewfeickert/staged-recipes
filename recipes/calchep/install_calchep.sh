@@ -7,6 +7,20 @@ set -o errexit -o nounset -o pipefail -o xtrace
 # compiler, expose the user-facing tools on PATH, and ship activation scripts.
 CALCHEP_HOME="${PREFIX}/share/calchep"
 
+# Platform branch: the run-time JIT compiler is gcc on Linux and clang on macOS
+# (matching upstream getFlags), ranlib needs -c on macOS, and the per-binary rpath
+# token is $ORIGIN on Linux vs @loader_path on macOS.
+case "${target_platform:-}" in
+  osx-*) is_osx=1 ;;
+  "")    [ "$(uname -s)" = Darwin ] && is_osx=1 || is_osx=0 ;;
+  *)     is_osx=0 ;;
+esac
+if [ "${is_osx}" = 1 ]; then
+  _CC=clang; _CXX=clang++; _RANLIB="ranlib -c"; _ORIGIN="@loader_path"
+else
+  _CC=gcc;   _CXX=g++;     _RANLIB="ranlib";    _ORIGIN="'\$ORIGIN'"
+fi
+
 # Record portable, bare compiler names for the run-time JIT compilation step.
 # The build-time conda compiler (e.g. x86_64-conda-linux-gnu-cc) does not exist
 # at run time, and its build-only CFLAGS (sysroot, -fdebug-prefix-map, ...) would
@@ -20,22 +34,22 @@ CALCHEP_HOME="${PREFIX}/share/calchep"
 # GCC >= 14 (which errors on the same legacy-C constructs as at build time).
 LEGACY_C="-Wno-error=implicit-function-declaration -Wno-error=incompatible-pointer-types -Wno-error=int-conversion -Wno-error=implicit-int"
 sed -i.bak -E \
-  -e 's|^CC=.*|CC="gcc"|' \
-  -e 's|^CXX=.*|CXX="g++"|' \
+  -e "s|^CC=.*|CC=\"${_CC}\"|" \
+  -e "s|^CXX=.*|CXX=\"${_CXX}\"|" \
   -e 's|^FC=.*|FC="gfortran"|' \
   -e "s|^CFLAGS=.*|CFLAGS=\"-g -fsigned-char -std=gnu99 -fPIC -fcommon ${LEGACY_C}\"|" \
   -e 's|^CXXFLAGS=.*|CXXFLAGS="-g -fPIC -fcommon"|' \
   -e 's|^FFLAGS=.*|FFLAGS="-fno-automatic"|' \
-  -e 's|^RANLIB=.*|RANLIB="ranlib"|' \
+  -e "s|^RANLIB=.*|RANLIB=\"${_RANLIB}\"|" \
   "${CALCHEP_HOME}/FlagsForSh"
 sed -i.bak -E \
-  -e 's|^CC = .*|CC = gcc|' \
-  -e 's|^CXX=.*|CXX=g++|' \
+  -e "s|^CC = .*|CC = ${_CC}|" \
+  -e "s|^CXX=.*|CXX=${_CXX}|" \
   -e 's|^FC = .*|FC = gfortran|' \
   -e "s|^CFLAGS = .*|CFLAGS = -g -fsigned-char -std=gnu99 -fPIC -fcommon ${LEGACY_C}|" \
   -e 's|^CXXFLAGS = .*|CXXFLAGS = -g -fPIC -fcommon|' \
   -e 's|^FFLAGS = .*|FFLAGS = -fno-automatic|' \
-  -e 's|^RANLIB = .*|RANLIB = ranlib|' \
+  -e "s|^RANLIB = .*|RANLIB = ${_RANLIB}|" \
   "${CALCHEP_HOME}/FlagsForMake"
 rm -f "${CALCHEP_HOME}/FlagsForSh.bak" "${CALCHEP_HOME}/FlagsForMake.bak"
 
@@ -73,8 +87,9 @@ sed -i 's|^echo ":|echo "#!/bin/sh|' "${CALCHEP_HOME}/mkWORKdir"
 # gcc wrapper injects its own -Wl,-rpath,$CONDA_PREFIX/lib, and an explicit
 # -rpath makes the linker ignore LD_RUN_PATH -- so n_calchep ends up unable to
 # load its sibling lf*.so ("cannot open shared object file"). Add an explicit
-# $ORIGIN rpath so n_calchep always finds the libraries next to itself.
-sed -i "s@ -o n_calchep@ -Wl,-rpath,'\$ORIGIN' -o n_calchep@" "${CALCHEP_HOME}/sbin/ld_n"
+# $ORIGIN (Linux) / @loader_path (macOS) rpath so n_calchep always finds the
+# libraries next to itself.
+sed -i "s@ -o n_calchep@ -Wl,-rpath,${_ORIGIN} -o n_calchep@" "${CALCHEP_HOME}/sbin/ld_n"
 
 # Link the run-time numerical executables against the combined shared library
 # (libcalchep.so, produced by the staging build) instead of the individual static
@@ -98,6 +113,14 @@ sed -i -E \
   -e 's@\$lib/num_c\.a@-L$lib -Wl,-rpath,$lib -Wl,--allow-shlib-undefined -lcalchep@' \
   -e 's@\$lib/(ntools|dynamic_me|libSLHAplus|serv)\.a@@g' \
   "${CALCHEP_HOME}/bin/make_main"
+
+# macOS ld64 spelling of the consumer-link allow-undefined flag (mirrors the
+# build_cache.sh translation for VandP.so): GNU's --allow-shlib-undefined ->
+# Darwin's -undefined dynamic_lookup, applied to the run-time linker scripts.
+if [ "${is_osx}" = 1 ]; then
+  sed -i 's/-Wl,--allow-shlib-undefined/-Wl,-undefined,dynamic_lookup/g' \
+    "${CALCHEP_HOME}/sbin/ld_n" "${CALCHEP_HOME}/bin/make_main"
+fi
 
 # Ship the shared library; drop the now-redundant static archives. Keep dummy.a
 # (static overridable stubs), dynamic_vp.a (model-table storage; bin/make_main links

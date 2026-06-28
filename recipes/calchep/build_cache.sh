@@ -46,14 +46,32 @@ cd "${CALCHEP_HOME}"
 # in transitively on platforms whose libgfortran needs it (x86_64) and not elsewhere
 # (aarch64), which is exactly the portable behaviour.
 LEGACY_C="-Wno-error=implicit-function-declaration -Wno-error=incompatible-pointer-types -Wno-error=int-conversion -Wno-error=implicit-int"
+
+# Platform-dependent link flags. macOS (clang + ld64) differs from Linux (gcc +
+# GNU ld): shared objects are built with -dynamiclib and named via -install_name,
+# there is no -rdynamic, and ranlib needs -c to index the -fcommon archives. These
+# mirror upstream getFlags' own Darwin branch. target_platform is set by the conda
+# build; fall back to uname. (getFlags sources this FlagsForSh as-is and propagates
+# the values to FlagsForMake, so the make build and build_gui.sh inherit them.)
+case "${target_platform:-}" in
+  osx-*) is_osx=1 ;;
+  "")    [ "$(uname -s)" = Darwin ] && is_osx=1 || is_osx=0 ;;
+  *)     is_osx=0 ;;
+esac
+if [ "${is_osx}" = 1 ]; then
+  _SHARED="-dynamiclib"; _SONAME="-install_name "; _lDL="-ldl";           _RANLIB="${RANLIB:-ranlib} -c"
+else
+  _SHARED="-shared";     _SONAME="";              _lDL="-rdynamic -ldl";  _RANLIB="${RANLIB:-ranlib}"
+fi
+
 cat > FlagsForSh <<EOF
 CC="${CC}"
 CFLAGS="${CFLAGS:-} -fsigned-char -std=gnu99 -fPIC -fcommon ${LEGACY_C}"
 HX11=
 LX11=""
-lDL="-rdynamic -ldl"
-SHARED="-shared"
-SONAME=
+lDL="${_lDL}"
+SHARED="${_SHARED}"
+SONAME="${_SONAME}"
 SO=so
 SNUM=
 FC="${FC}"
@@ -61,7 +79,7 @@ FFLAGS="${FFLAGS:-} -fno-automatic"
 lFort="-lgfortran"
 CXX="${CXX}"
 CXXFLAGS="${CXXFLAGS:-} -fPIC -fcommon"
-RANLIB="${RANLIB:-ranlib}"
+RANLIB="${_RANLIB}"
 MAKE=make
 lQuad=
 export CC CFLAGS lDL LX11 SHARED SONAME SO FC FFLAGS RANLIB CXX CXXFLAGS lFort lQuad MAKE
@@ -69,6 +87,17 @@ EOF
 
 # A pristine tree has no work/bin symlink; the build creates it. Guard re-runs.
 rm -f work/bin
+
+# macOS ld64 has no --allow-shlib-undefined; patches/0004 bakes that GNU spelling
+# into c_source/dynamicME/vp_dynam.c (compiled into dynamic_vp.a) and bin/run_batch.
+# Translate it to the Darwin equivalent before building so both the compiled and the
+# script copy link VandP.so correctly. (Uses the conda GNU sed in the staging build
+# requirements; the ld_n/make_main consumer links are handled in install_calchep.sh.)
+if [ "${is_osx}" = 1 ]; then
+  grep -rl -- '-Wl,--allow-shlib-undefined' . 2>/dev/null | while IFS= read -r f; do
+    sed -i 's/-Wl,--allow-shlib-undefined/-Wl,-undefined,dynamic_lookup/g' "$f"
+  done
+fi
 
 # Serial build: the recursive c_source build has cross-subdirectory link-order
 # dependencies and is not -j safe. </dev/null guards any stray interactive read.
@@ -102,12 +131,25 @@ make </dev/null
 # undefined libLHAPDF symbols (evolvePDFm, ...): LHAPDF is opt-in, so they resolve
 # lazily at run time only when a user supplies LHAPDF -- hence the consumer links use
 # -Wl,--allow-shlib-undefined (see install_calchep.sh and patches/0004).
-( cd lib && \
-  "${CC}" ${CFLAGS:-} -shared -Wl,-soname,libcalchep.so -o libcalchep.so \
-    -Wl,--whole-archive \
-      num_c.a ntools.a dynamic_me.a libSLHAplus.a serv.a \
-    -Wl,--no-whole-archive \
-      faux.o -lm -lgfortran )
+# Linux uses GNU ld (--whole-archive); macOS uses ld64 (-force_load per archive,
+# -dynamiclib + -install_name, and -undefined dynamic_lookup because a macOS dylib
+# errors on undefined symbols by default -- here the optional LHAPDF/n_calchep.o
+# danglers the linux .so leaves to resolve at run time). install_name @rpath/...
+# lets consumers find it via the rpath they add to $CALCHEP/lib.
+if [ "${is_osx}" = 1 ]; then
+  ( cd lib && \
+    "${CC}" ${CFLAGS:-} -dynamiclib -install_name @rpath/libcalchep.so -o libcalchep.so \
+      -Wl,-force_load,num_c.a -Wl,-force_load,ntools.a -Wl,-force_load,dynamic_me.a \
+      -Wl,-force_load,libSLHAplus.a -Wl,-force_load,serv.a \
+      faux.o -lm -lgfortran -Wl,-undefined,dynamic_lookup )
+else
+  ( cd lib && \
+    "${CC}" ${CFLAGS:-} -shared -Wl,-soname,libcalchep.so -o libcalchep.so \
+      -Wl,--whole-archive \
+        num_c.a ntools.a dynamic_me.a libSLHAplus.a serv.a \
+      -Wl,--no-whole-archive \
+        faux.o -lm -lgfortran )
+fi
 
 # The work/bin symlink points at the absolute build-prefix bin/ and would not
 # survive relocation; drop it (mkWORKdir recreates a correct one per work dir).
