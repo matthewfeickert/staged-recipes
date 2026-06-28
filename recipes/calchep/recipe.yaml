@@ -84,6 +84,8 @@ outputs:
       run:
         # runtime generated bin/ directory contains perl scripts
         - perl
+        - if: linux
+          then: gcc
 
     tests:
       - package_contents:
