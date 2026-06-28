@@ -135,10 +135,14 @@ make </dev/null
 # -dynamiclib + -install_name, and -undefined dynamic_lookup because a macOS dylib
 # errors on undefined symbols by default -- here the optional LHAPDF/n_calchep.o
 # danglers the linux .so leaves to resolve at run time). install_name @rpath/...
-# lets consumers find it via the rpath they add to $CALCHEP/lib.
+# lets consumers find it via the rpath they add to $CALCHEP/lib. ${LDFLAGS} is
+# passed explicitly on macOS: unlike the linux gcc wrapper the clang wrapper does
+# not auto-add -L$PREFIX/lib (so -lgfortran would not resolve), and it also brings
+# -headerpad_max_install_names for conda's install-name relocation. (The linux
+# branch omits ${LDFLAGS} on purpose -- its --gc-sections would fight --whole-archive.)
 if [ "${is_osx}" = 1 ]; then
   ( cd lib && \
-    "${CC}" ${CFLAGS:-} -dynamiclib -install_name @rpath/libcalchep.so -o libcalchep.so \
+    "${CC}" ${CFLAGS:-} ${LDFLAGS:-} -dynamiclib -install_name @rpath/libcalchep.so -o libcalchep.so \
       -Wl,-force_load,num_c.a -Wl,-force_load,ntools.a -Wl,-force_load,dynamic_me.a \
       -Wl,-force_load,libSLHAplus.a -Wl,-force_load,serv.a \
       faux.o -lm -lgfortran -Wl,-undefined,dynamic_lookup )
