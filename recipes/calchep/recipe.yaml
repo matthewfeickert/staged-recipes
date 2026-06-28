@@ -94,6 +94,8 @@ outputs:
           then: gcc
         - if: osx
           then: clang
+      run_exports:
+        - ${{ pin_subpackage("calchep", upper_bound="x.x") }}
 
     tests:
       - package_contents:
