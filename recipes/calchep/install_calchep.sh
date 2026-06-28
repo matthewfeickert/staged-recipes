@@ -107,6 +107,15 @@ sed -i -E \
 # micrOMEGAs-only variant (the blind engine uses serv).
 rm -f "${CALCHEP_HOME}/lib/"{num_c,ntools,dynamic_me,libSLHAplus,serv,servNoX11,symb}.a
 
+# libcalchep.so deliberately stays under share/calchep/lib and is NOT symlinked
+# into ${PREFIX}/lib. CalcHEP is run-in-place: every binary it JIT-builds finds
+# the library through an absolute rpath to $CALCHEP/lib (the -Wl,-rpath baked in
+# by the ld_n/make_main edits above), never via the default loader path.
+# Downstream consumers (e.g. micrOMEGAs) are CalcHEP-aware and link against
+# $CALCHEP/lib the same way, so they do not need it in ${PREFIX}/lib either.
+# Keeping this generically-named, unversioned .so out of the global lib dir also
+# avoids polluting every environment's library namespace.
+
 # Expose the user-facing tools via relative (relocatable) symlinks under their
 # upstream names. Internal JIT helpers (make_main, mkLibstat, mkLibshared,
 # subproc_cycle, make_VandP, Int) and the work-dir-internal ``calc`` are
