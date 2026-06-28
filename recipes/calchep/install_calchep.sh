@@ -88,8 +88,9 @@ sed -i 's|^echo ":|echo "#!/bin/sh|' "${CALCHEP_HOME}/mkWORKdir"
 # -rpath makes the linker ignore LD_RUN_PATH -- so n_calchep ends up unable to
 # load its sibling lf*.so ("cannot open shared object file"). Add an explicit
 # $ORIGIN (Linux) / @loader_path (macOS) rpath so n_calchep always finds the
-# libraries next to itself.
-sed -i "s@ -o n_calchep@ -Wl,-rpath,${_ORIGIN} -o n_calchep@" "${CALCHEP_HOME}/sbin/ld_n"
+# libraries next to itself. (Delimiter is | not @: the macOS @loader_path value
+# contains @, which would prematurely close an s@...@...@ expression.)
+sed -i "s| -o n_calchep| -Wl,-rpath,${_ORIGIN} -o n_calchep|" "${CALCHEP_HOME}/sbin/ld_n"
 
 # Link the run-time numerical executables against the combined shared library
 # (libcalchep.so, produced by the staging build) instead of the individual static
